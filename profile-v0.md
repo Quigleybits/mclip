@@ -1,0 +1,843 @@
+# MCLIP — MCP Command-Line Interface Profile, v0
+
+**Profile specification, draft v0 — revision 2**
+Author: Aidan Quigley
+Date: 2026-05-15
+Status: **Draft** — pre-SEP, pre-implementation
+Baseline MCP version: `2025-11-25` ([spec](https://modelcontextprotocol.io/specification/2025-11-25))
+
+---
+
+## 0. Conventions
+
+### 0.1 Normative language
+
+The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY**, and **OPTIONAL** in this document are to be interpreted as described in BCP 14 [RFC 2119] [RFC 8174] when, and only when, they appear in all capitals.
+
+### 0.2 Conformance markers
+
+Every normative rule in this document carries a conformance marker of the form `[MCLIP-§-NN]` where `§` is the section number and `NN` is the rule number within that section. The conformance test suite (separate deliverable) targets these markers by ID.
+
+### 0.3 Scope
+
+This profile applies to **CLI implementations** that translate MCP server capabilities into command-line invocations. It does not modify the MCP specification itself.
+
+MCLIP v0 is structured as a required **MCLIP-Core** level plus eight independently-claimable optional modules — see §0.7 for the conformance-level table and §15 for the claim format.
+
+The companion CLI-metadata extension (§16) reserves the `mclip.*` namespace under MCP's `_meta` field. Specific keys, types, and semantics are published as a separate **Extensions Track SEP** rather than inline in this profile. MCLIP-Core MUST function correctly against vanilla MCP servers that publish no `mclip.*` metadata; a client claims MCLIP-Metadata only when it implements the Extensions SEP's keys.
+
+### 0.4 Terminology
+
+- **MCP server**: a process implementing the Model Context Protocol per the 2025-11-25 spec.
+- **MCLIP client**: a CLI implementation conforming to this profile. Synonymous with **wrapper** at the profile level; "wrapper" emphasises the multi-implementation ecosystem (`mcp2cli`, `MCPorter`, `MCPShim`, `f/mcptools`).
+- **Wrapper**: a tool that translates MCP into a CLI surface. MCLIP defines the rules wrappers MUST follow to produce a uniform surface.
+- **Capability area**: one of `tools`, `resources`, `prompts` (per MCP spec).
+- **Tool result**: the `CallToolResult` returned by `tools/call`, containing `content[]`, optionally `structuredContent`, and `isError`.
+- **Canonical surface**: the command shape, flags, output schema, exit codes, and error envelope that every MCLIP-conformant client MUST produce for the same MCP server. The output of this profile applied to an MCP server.
+- **Conformance**: an implementation's adherence to every MUST rule in MCLIP-Core plus every MUST rule in each claimed module. See §15.
+- **Conformance level**: a named subset of this profile claimable independently. MCLIP-Core is required; the eight modules in §0.7 are optional.
+- **Module**: a named optional conformance level (e.g. MCLIP-Resources, MCLIP-Safety). Each module is self-contained: its rules activate only when the module is claimed.
+- **Extension**: an additive specification outside this profile. The CLI-metadata extension (§16) is the only extension referenced by v0; it lives in a companion Extensions Track SEP and MUST NOT be required for Core conformance.
+- **Fixture**: a synthetic MCP server or tool definition used by the conformance test suite (separate deliverable) to exercise specific rules. The fixture corpus covers the audit's known fragmentation points plus the canonical scenarios per module.
+
+### 0.5 MCP as source of truth
+
+`[MCLIP-0-01]` MCLIP clients MUST derive their command surface from MCP server discovery methods (`tools/list`, `resources/list`, `prompts/list`, their associated schemas, `annotations`, and the server's advertised `capabilities`). They MUST NOT require vendor-specific command definitions for Core conformance (§0.7).
+
+> Rationale: the foundational promise of MCLIP is "if a company adopts MCP, a user or agent automatically knows how to interact with it via CLI." That promise only holds if discovery is the sole input to the command surface. Hardcoded per-vendor command tables would break it.
+
+### 0.6 Profile scope: mechanics, not semantics
+
+This profile standardises the **mechanics** of CLI access over MCP — command shape, flag mapping, output envelope, exit codes, and error model. It does **not** standardise **domain semantics** — tool names, verbs, or argument names across services.
+
+In practice this means:
+
+```
+mclip linear tools call create-comment --issue-id ENG-123
+mclip github tools call create-issue --title "..."
+```
+
+will follow the same grammar, flag-mapping rules, output shape, and error semantics. It does **not** mean every service exposes the same semantic verbs (e.g. a common `create-issue` or `delete-user` across vendors). MCP itself does not standardise domain tool names, so MCLIP cannot honestly promise that. A cross-vendor semantic-verb layer is out of scope for v0 and would require a separate profile built on top of MCLIP.
+
+### 0.7 Conformance levels
+
+MCLIP v0 defines one required level and eight optional modules. An implementation claims **MCLIP-Core** if it passes every MUST in the Core sections. It claims a module by additionally passing every MUST in that module's section(s). Modules are independent; claiming MCLIP-Resources does not require claiming MCLIP-Prompts. See §15 for the canonical claim format.
+
+| Level | Required? | Covers |
+|---|---|---|
+| **MCLIP-Core** | Yes | §1 (Command shape — `tools` and `meta` verbs only), §2 (Argument and flag conventions), §3 (Stdin handling), §4 (Output formats — `text` and `json`; `ndjson` flag is defined but only required when MCLIP-Streaming is claimed), §5 (JSON envelope), §6 (Exit codes), §10 (Pagination), §12.1 stdio item + §12.4–§12.5 (Transport errors and timeout), §13.1, §13.3, §13.4 (MCLIP-specific server discovery), §14.0 (Minimum safety baseline), §15 (Conformance). |
+| **MCLIP-Resources** | No | §7 (Resources verbs: `list`, `read`, `templates`, `watch`). |
+| **MCLIP-Prompts** | No | §8 (Prompts verbs: `list`, `get`). |
+| **MCLIP-HTTP** | No | Streamable HTTP transport in §12: HTTP item of §12.1, §12.2 (protocol-version header), and HTTP semantics of §12.3 (`--transport http`). |
+| **MCLIP-Streaming** | No | §9.1 (Progress notifications), §9.2 (NDJSON streaming output), and the NDJSON-for-incremental-tools semantics referenced by §4.4. |
+| **MCLIP-Safety** | No | §14.1–§14.3 (Confirmation prompt UX, `--dry-run`, `--force` semantics, `mclip.confirm_message` support, trusted-server escape hatch). Builds on the Core safety baseline (§14.0). |
+| **MCLIP-Auth** | No | §11 (Credential resolution, env-var conventions, Bearer header transmission). |
+| **MCLIP-Metadata** | No | §16 (Honouring `mclip.*` keys per the companion Extensions Track SEP). |
+| **MCLIP-Discovery** | No | §13.2 (Inherited config files from Claude Desktop, `.vscode/mcp.json`, `.cursor/mcp.json`). |
+
+`[MCLIP-0-02]` A MCLIP-Core-conformant client MUST function correctly against vanilla MCP servers that publish no `mclip.*` metadata. Modules MAY extend behaviour within their own scope; they MUST NOT relax safety defaults (per §14.0 and §16.3).
+
+Task-augmented execution (`--follow`, `--detach`, the `meta tasks *` subcommands previously sketched in §9.3) is **deferred to MCLIP v1** pending stabilisation of MCP's `tasks/*` API. Revision 2 of v0 removes these from the v0 surface entirely.
+
+---
+
+## 1. Command shape
+
+### 1.1 Root binary name
+
+`[MCLIP-1-01]` The reference implementation MUST be invoked as `mclip`. Implementations that are not the reference (e.g. existing wrappers adding an "MCLIP mode") MAY use a different binary name but MUST accept the canonical command shape defined in §1.2 under their own binary or under an `mclip` subcommand or alias.
+
+### 1.2 Canonical invocation shape
+
+`[MCLIP-1-02]` Commands MUST follow the shape:
+
+```
+<binary> <server> <category> <verb> [target] [flags...]
+```
+
+Where:
+- `<server>` is the server alias (per §13 discovery rules)
+- `<category>` is one of `tools`, `resources`, `prompts`, or `meta`
+- `<verb>` is a category-specific verb (§1.3)
+- `[target]` is a tool name, URI, or prompt name as required by the verb
+- `[flags]` are options per §2 and §A
+
+### 1.3 Reserved category verbs
+
+`[MCLIP-1-03]` Conformant clients MUST implement the following verbs. The Module column identifies which conformance level requires the verb. Verbs belonging to a module that is not claimed MUST NOT be advertised as MCLIP-conformant by that implementation.
+
+| Category | Verb | Target | Module | Description |
+|---|---|---|---|---|
+| `tools` | `list` | — | Core | Enumerate available tools |
+| `tools` | `call` | tool name | Core | Invoke a tool with the given inputs |
+| `tools` | `describe` | tool name | Core | Print the tool's full schema and annotations |
+| `meta` | `ping` | — | Core | Verify server reachability |
+| `meta` | `info` | — | Core | Print server identity and capabilities |
+| `meta` | `version` | — | Core | Print the server's reported protocol version |
+| `resources` | `list` | — | Resources | Enumerate available resources |
+| `resources` | `read` | URI | Resources | Read a resource's contents |
+| `resources` | `templates` | — | Resources | List resource URI templates |
+| `resources` | `watch` | URI | Resources | Subscribe to update notifications (§7.4) |
+| `prompts` | `list` | — | Prompts | Enumerate available prompts |
+| `prompts` | `get` | prompt name | Prompts | Retrieve a prompt with arguments |
+
+### 1.4 Root-level subcommands
+
+`[MCLIP-1-04]` Conformant clients MUST implement these root-level subcommands (not bound to any server):
+
+| Command | Purpose |
+|---|---|
+| `<binary> servers list` | Enumerate known servers from the config |
+| `<binary> servers add <name> ...` | Add a server to the user config |
+| `<binary> servers remove <name>` | Remove a server from the user config |
+| `<binary> --help` / `-h` | Print top-level help and exit 0 |
+| `<binary> --version` | Print the MCLIP profile version and client version, exit 0 |
+
+### 1.5 Help
+
+`[MCLIP-1-05]` Every subcommand MUST accept `--help` and `-h`. Passing either MUST cause the client to print help text to stdout and exit 0. This includes invalid subcommands paired with `-h`.
+
+> Rationale: clig.dev "Display help when passed `-h` or `--help` flags. Ignore any other flags and arguments that are passed."
+
+### 1.6 Verb-noun vs noun-verb
+
+`[MCLIP-1-06]` MCLIP uses **category-then-verb** ordering (`tools list`, `tools call`, `resources read`). Implementations MUST NOT define equivalent verb-then-category top-level aliases (e.g. `mclip list tools`) at the conformance-tested surface, to ensure script portability. Users MAY add their own shell aliases.
+
+> Rationale: Modern noun-verb shape (docker, gcloud, aws, gh) lets the three MCP capability areas namespace their verbs symmetrically. The audit (`wrapper-audit.md`) found five distinct invocation shapes across existing wrappers; locking one is the highest-leverage portability fix.
+
+---
+
+## 2. Argument and flag conventions
+
+### 2.1 Long options
+
+`[MCLIP-2-01]` Conformant clients MUST accept both `--flag value` and `--flag=value` forms for any flag that takes a value (POSIX-style and GNU-style). They MUST treat the two as equivalent.
+
+> Reference: POSIX.1-2017 XBD §12.2 + GNU `getopt_long` convention.
+
+### 2.2 Short options
+
+`[MCLIP-2-02]` Where this profile defines a short option (e.g. `-h`, `-o`, `-y`, `-q`, `-v`), conformant clients MUST accept it as a single-letter alias for the long form.
+
+`[MCLIP-2-03]` Implementations MAY accept POSIX-style short option combination (`-abc` ≡ `-a -b -c`) but this profile does not require it. Tests targeting MCLIP MUST NOT rely on combination.
+
+### 2.3 End-of-options separator
+
+`[MCLIP-2-04]` Conformant clients MUST honour `--` as the end-of-options separator (POSIX Guideline 10). Arguments after `--` MUST be treated as positional, even if they begin with `-`.
+
+### 2.4 Stdin sentinel
+
+`[MCLIP-2-05]` Conformant clients MUST accept the single character `-` as a positional argument or flag value to mean "read from stdin", per POSIX Guideline 13. This applies wherever the schema accepts a string, file path, or input blob.
+
+### 2.5 Schema property → flag name mapping
+
+`[MCLIP-2-06]` For each property in a tool's `inputSchema`, MCLIP clients MUST generate a flag name by converting the property name to **lower-kebab-case**:
+
+- `snake_case` → `--snake-case`
+- `camelCase` → `--camel-case`
+- `PascalCase` → `--pascal-case`
+- `already-kebab` → `--already-kebab`
+
+`[MCLIP-2-07]` Generated flag names MUST NOT collide with reserved flag names (Appendix A). If a tool's input property would collide, the client MUST prefix the generated flag with `--arg-` (e.g. `output` → `--arg-output`).
+
+### 2.6 Type mapping
+
+`[MCLIP-2-08]` JSON-Schema types map to CLI inputs as follows:
+
+| JSON-Schema | CLI form | Example |
+|---|---|---|
+| `string` | `--flag <value>` | `--name "alice"` |
+| `integer` / `number` | `--flag <value>` | `--count 5` |
+| `boolean` | `--flag` / `--no-flag` | `--verbose` / `--no-verbose` |
+| `string` w/ `enum` | `--flag <enum-value>` | `--colour red` (client validates) |
+| `array` of primitives | repeated `--flag <item>` | `--tag bug --tag urgent` |
+| `object` (1 level) | dotted flags | `--metadata.role admin` |
+| `object` (2+ levels) | use `--input` (§2.7) | — |
+| `null` | `--flag null` literal | — |
+
+`[MCLIP-2-09]` Conformant clients MUST accept repeated-flag form for array properties. They MUST NOT mandate comma-separated form. They MAY additionally accept comma-separated form when the array's `items.type` is `string` and no string value contains a comma.
+
+> Rationale: audit found four incompatible array encodings. Repeated flags are the only form safe for arbitrary values. POSIX Guideline 8 permits but does not mandate comma-separation.
+
+### 2.7 Complex input fallback
+
+`[MCLIP-2-10]` Conformant clients MUST accept `--input <json>` and `--input-file <path>` flags on `tools call`. These provide the entire tool input as a JSON object, bypassing flag-level mapping. When `--input` is used, individual property flags MUST NOT be permitted in the same invocation; mixing MUST exit `64` (usage error).
+
+### 2.8 Boolean negation
+
+`[MCLIP-2-11]` For any boolean flag `--foo` generated from a schema property or defined in this profile, the form `--no-foo` MUST set the value to `false`. Default behaviour when neither `--foo` nor `--no-foo` is given is the schema's `default`, or unspecified if no default.
+
+### 2.9 Required vs optional
+
+`[MCLIP-2-12]` Properties listed in the tool input schema's `required` array MUST be supplied via flag, `--input`, or `--input-file`. Missing required input MUST cause exit `64` with a clear error message naming each missing property.
+
+---
+
+## 3. Stdin handling
+
+### 3.1 Stdin sentinel for flag values
+
+`[MCLIP-3-01]` When a flag value is exactly `-`, the client MUST read the value from stdin. Reading is greedy: the entire stdin contents (up to EOF) is treated as the value.
+
+### 3.2 `--input -`
+
+`[MCLIP-3-02]` `--input -` MUST read a complete JSON object from stdin and treat it as the tool input.
+
+### 3.3 TTY guard
+
+`[MCLIP-3-03]` If the client requires stdin but stdin is a TTY, the client MUST NOT block silently. It MUST print a one-line indication to stderr (e.g. `mclip: reading input from stdin (Ctrl-D to end)`) before blocking.
+
+> Reference: clig.dev "If your command is expecting to have something piped to it and stdin is an interactive terminal, display help immediately and quit." MCLIP softens this to a prompt-line because some interactive workflows are legitimate.
+
+---
+
+## 4. Output formats
+
+### 4.1 Format selection
+
+`[MCLIP-4-01]` The flag `--output <format>` (short: `-o <format>`) selects output format. Valid values are `text`, `json`, and `ndjson`. The default is:
+
+- `text` when stdout is a TTY and the command is non-streaming
+- `json` when stdout is not a TTY and the command is non-streaming
+- `ndjson` for streaming commands (§9) regardless of TTY
+
+`[MCLIP-4-02]` Conformant clients MUST accept all three values. Other format aliases (`yaml`, `table`, etc.) MAY be supported but MUST NOT be required.
+
+### 4.2 Text format
+
+`[MCLIP-4-03]` `text` output is intended for human readers. The exact rendering is not normative, but conformant clients MUST:
+
+- Print primary content to stdout
+- Print progress, status, and log messages to stderr
+- Render `result.content[]` text parts in a readable form
+- Honour `NO_COLOR` env var and `--no-color` flag (§A)
+- Detect TTY and disable colour automatically when not a TTY
+
+### 4.3 JSON format
+
+`[MCLIP-4-04]` `json` output is intended for machine consumption. See §5.
+
+### 4.4 NDJSON format
+
+`[MCLIP-4-05]` `ndjson` output emits one complete JSON value per line, separated by `\n`. Each line MUST be independently parseable. Used for streaming (§9).
+
+### 4.5 stdout vs stderr separation
+
+`[MCLIP-4-06]` Conformant clients MUST send primary command output (the result envelope or its text rendering) to **stdout** only. They MUST send progress, log, diagnostic, and confirmation-prompt output to **stderr** only.
+
+> Reference: clig.dev + POSIX convention. This is non-negotiable for shell pipeability.
+
+---
+
+## 5. JSON output envelope
+
+### 5.1 Success envelope
+
+`[MCLIP-5-01]` On successful execution, JSON output MUST be a single JSON object with the shape:
+
+```json
+{
+  "result": <MCP result, verbatim>
+}
+```
+
+For `tools call`, `<MCP result>` is the `CallToolResult` per MCP spec, including `content[]`, optionally `structuredContent`, and `isError`. For `resources read`, it is the `ReadResourceResult`. For `prompts get`, it is the `GetPromptResult`. For `*/list` commands, it is the list response including `nextCursor` if present.
+
+`[MCLIP-5-02]` Clients MUST NOT alter, reorder, or strip fields from the MCP result. The `result` key is the only added wrapper.
+
+### 5.2 Error envelope
+
+`[MCLIP-5-03]` On error, JSON output MUST be a single JSON object with the shape:
+
+```json
+{
+  "error": {
+    "code": <integer>,
+    "message": <string, human-readable>,
+    "origin": <"server"|"transport"|"client"|"tool">,
+    "data": <freeform JSON, optional>
+  }
+}
+```
+
+`[MCLIP-5-04]` `origin` MUST be one of:
+- `"server"` — the MCP server returned a JSON-RPC error
+- `"transport"` — the transport layer failed (connection refused, timeout)
+- `"client"` — the CLI itself errored (config invalid, usage error, schema validation)
+- `"tool"` — the tool executed but returned `isError: true` in its result
+
+`[MCLIP-5-05]` When `origin == "server"`, the `code` and `data` MUST be the JSON-RPC error code and `data` field verbatim from the server response.
+
+`[MCLIP-5-06]` When `origin == "tool"`, the envelope MUST be:
+
+```json
+{
+  "result": <CallToolResult with isError: true>,
+  "error": {
+    "code": 100,
+    "message": "Tool reported error",
+    "origin": "tool"
+  }
+}
+```
+
+Both `result` and `error` keys are present so consumers can read the tool's own diagnostics from `result.content[]`.
+
+### 5.3 No protocol noise
+
+`[MCLIP-5-07]` Clients MUST NOT include `jsonrpc`, `id`, or other JSON-RPC protocol-level fields in CLI output. The envelope is for the CLI consumer, not for the wire.
+
+---
+
+## 6. Exit codes
+
+### 6.1 Canonical codes
+
+`[MCLIP-6-01]` Conformant clients MUST exit with one of the following codes:
+
+| Code | Meaning | Trigger |
+|---|---|---|
+| `0` | Success | Normal completion |
+| `1` | Generic error | Unspecified failure not covered below |
+| `2` | Cancelled | SIGINT received and acted upon |
+| `64` | Usage error | Bad CLI args, mixing `--input` with property flags, missing required input |
+| `65` | Data error | `--input` JSON failed to parse, schema validation failed |
+| `66` | Input file missing | `--input-file` path does not exist or is unreadable |
+| `69` | Server unavailable | Cannot connect to MCP server; transport error |
+| `70` | Internal client error | Bug in MCLIP client; should be reported |
+| `75` | Temporary failure | Retryable error (rate limit, transient I/O) |
+| `77` | Permission denied | Authentication or authorization failure |
+| `78` | Config error | mclip.json malformed, server name unknown |
+| `100` | Tool reported error | MCP call succeeded but `result.isError == true` |
+
+`[MCLIP-6-02]` Code values 0–2 follow universal CLI convention. Codes 64–78 are derived from BSD `sysexits.h` and remain the most precedented category-error codes in published practice despite their formal deprecation. Code `100` is MCLIP-specific.
+
+### 6.2 SIGINT
+
+`[MCLIP-6-03]` On SIGINT (Ctrl-C), the client MUST attempt to send `notifications/cancelled` to the MCP server per MCP spec §6.1 (cancellation is fire-and-forget). The client MUST NOT block on acknowledgement. After sending (or skipping if no in-flight request), the client MUST exit `2`.
+
+### 6.3 SIGPIPE
+
+`[MCLIP-6-04]` On SIGPIPE (downstream pipe closed), clients SHOULD exit silently with code `0` if the closure occurred during normal output flush, or `141` (128 + SIGPIPE) if the producer state was indeterminate. This matches GNU coreutils convention.
+
+---
+
+## 7. Resources
+
+### 7.1 List
+
+`[MCLIP-7-01]` `<binary> <server> resources list` MUST issue `resources/list` and return the response. It MUST support `--cursor <opaque>`, `--limit <N>`, and `--no-paginate` per §10.
+
+### 7.2 Read
+
+`[MCLIP-7-02]` `<binary> <server> resources read <uri>` MUST issue `resources/read { uri }` and return the response.
+
+`[MCLIP-7-03]` In `text` output mode, if the response contents are text and there is exactly one content item, the client SHOULD print the text directly to stdout without the JSON envelope. JSON mode is unaffected by this rendering choice.
+
+### 7.3 Templates
+
+`[MCLIP-7-04]` `<binary> <server> resources templates` MUST issue `resources/templates/list` and return the response.
+
+### 7.4 Watch
+
+`[MCLIP-7-05]` `<binary> <server> resources watch <uri>` MUST issue `resources/subscribe { uri }` and then stream `notifications/resources/updated` events to stdout in `ndjson` format until interrupted. SIGINT MUST trigger `resources/unsubscribe` and exit `0`.
+
+> Note: requires server-side `capabilities.resources.subscribe: true`. Clients MUST check this capability before attempting to subscribe; otherwise exit `69` with a clear error.
+
+---
+
+## 8. Prompts
+
+### 8.1 List
+
+`[MCLIP-8-01]` `<binary> <server> prompts list` MUST issue `prompts/list` and return the response with pagination support per §10.
+
+### 8.2 Get
+
+`[MCLIP-8-02]` `<binary> <server> prompts get <name> [--arg-name value...]` MUST issue `prompts/get { name, arguments }` where `arguments` is constructed from `--<arg-name> <value>` flags (kebab-case-mapped from the prompt's declared argument names).
+
+`[MCLIP-8-03]` Prompts do not carry per-argument JSON-Schema in the MCP spec — arguments are simple `{ name, description?, required? }` triples. MCLIP clients MUST treat all prompt argument values as strings.
+
+---
+
+## 9. Streaming
+
+This section is MCLIP-Streaming module. Core clients MAY drop progress notifications silently; they MUST NOT print progress or partial results to stdout under any circumstances.
+
+### 9.1 Progress notifications
+
+`[MCLIP-9-01]` Clients claiming MCLIP-Streaming MUST include a `progressToken` in `_meta` on every outgoing request that could plausibly produce a progress notification (i.e. `tools/call`, `resources/read`, `prompts/get`). The token format is implementation-defined but MUST be unique per outgoing request.
+
+`[MCLIP-9-02]` On receiving `notifications/progress` with a matching `progressToken`, MCLIP-Streaming clients MUST render progress to **stderr**. The rendering is non-normative but SHOULD include the `progress`, `total` (if present), and `message` (if present) fields.
+
+`[MCLIP-9-03]` Progress output MUST NOT mix with stdout. Pipe consumers reading JSON or NDJSON from stdout MUST be unaffected by progress.
+
+### 9.2 NDJSON streaming output
+
+`[MCLIP-9-04]` For tools or operations that emit incremental results, MCLIP-Streaming clients MUST use NDJSON format (§4.4) on stdout. Each line MUST be an independently-parseable JSON object.
+
+> Detection of "incremental output" is currently underspecified: the v0 surface relies on server-side signals (partial-result notifications mid-call) that MCP does not yet standardise across all servers. v0.1 will tighten the detection rule alongside the conformance fixture corpus. See `todo.md` open items.
+
+### 9.3 Cancellation
+
+`[MCLIP-9-07]` Cancellation semantics are defined entirely in §6.2 (SIGINT triggers `notifications/cancelled` and exit `2`). Clients MUST NOT assume the server will stop processing before they exit; the cancellation is fire-and-forget. This rule applies to MCLIP-Core; MCLIP-Streaming adds no cancellation rules beyond Core.
+
+> ID note: this rule was `[MCLIP-9-07]` in v0 draft 1; deleted rules `[MCLIP-9-05]` and `[MCLIP-9-06]` are gone. ID preserved to keep any in-flight references stable.
+
+> Task-augmented cancellation (`tasks/cancel` per MCP spec) is deferred to MCLIP v1 along with the rest of task support.
+
+---
+
+## 10. Pagination
+
+### 10.1 Default behaviour
+
+`[MCLIP-10-01]` For `*/list` commands, the default behaviour MUST be to auto-paginate: the client iterates until `nextCursor` is absent and concatenates results before returning.
+
+### 10.2 Explicit cursor
+
+`[MCLIP-10-02]` `--cursor <opaque>` causes the client to issue only one paginated request with the given cursor and return only that page (plus its `nextCursor`).
+
+### 10.3 Limit
+
+`[MCLIP-10-03]` `--limit <N>` caps the total number of items returned across auto-pagination. The client MUST stop iterating once `N` items have been collected, even if more pages exist.
+
+### 10.4 No paginate
+
+`[MCLIP-10-04]` `--no-paginate` causes the client to issue exactly one paginated request and return its result without iteration.
+
+### 10.5 Cursor opacity
+
+`[MCLIP-10-05]` Clients MUST NOT parse, modify, or persist cursors across sessions. Cursors are opaque to clients per MCP spec.
+
+---
+
+## 11. Auth & session behaviour
+
+### 11.1 Token sources (priority order)
+
+`[MCLIP-11-01]` When a server requires authentication, conformant clients MUST resolve credentials from these sources, in this priority order (first match wins):
+
+1. Explicit `--auth-token <value>` flag (single-shot, not persisted)
+2. Env var `MCLIP_TOKEN_<SERVER_NAME>` where `<SERVER_NAME>` is the server alias upper-cased with `-` replaced by `_`
+3. Env var `MCLIP_TOKEN` (generic fallback for single-server use)
+4. `auth.token` field in the server's entry in the config file (§13)
+5. OS-keychain entry under service name `mclip` and account `<server-name>` (clients MAY support; not required)
+
+`[MCLIP-11-02]` Clients MUST NOT prompt for credentials on stdin during a `tools call`, `resources read`, or `prompts get` invocation. Interactive credential prompts MUST be confined to a dedicated `<binary> servers auth <name>` subcommand (RESERVED for v1).
+
+### 11.2 Auth header transmission
+
+`[MCLIP-11-03]` For Streamable HTTP transport, the resolved token MUST be sent as `Authorization: Bearer <token>` unless the server config specifies a different scheme via `auth.scheme` (deferred to v1; v0 clients MUST default to Bearer).
+
+### 11.3 OAuth flows
+
+`[MCLIP-11-04]` Full OAuth 2.1 + PKCE flow standardisation is **out of scope for v0**. Clients MAY implement provider-specific OAuth helpers behind the `<binary> servers auth <name>` subcommand without breaking conformance.
+
+### 11.4 Session reuse
+
+`[MCLIP-11-05]` Clients MAY reuse connections to the same server across invocations via a background daemon or session cache. Whether and how is non-normative for v0. The CLI behaviour (output, exit codes) MUST be identical whether or not session reuse occurs.
+
+---
+
+## 12. Transport
+
+### 12.1 Supported transports
+
+`[MCLIP-12-01]` Conformant clients MUST support both transports defined by MCP 2025-11-25:
+
+- **stdio**: client spawns the server as a subprocess
+- **Streamable HTTP**: client connects to a URL endpoint
+
+`[MCLIP-12-02]` Clients MUST NOT support the deprecated HTTP+SSE transport from MCP 2024-11-05 unless they also explicitly support the 2024-11-05 spec version end-to-end.
+
+### 12.2 Protocol version header
+
+`[MCLIP-12-03]` For Streamable HTTP, clients MUST send `MCP-Protocol-Version: 2025-11-25` (or whichever MCP spec version they target) on all requests after initialisation, per MCP spec.
+
+### 12.3 Transport selection
+
+`[MCLIP-12-04]` Transport is determined by the server config entry (§13). The `--transport <stdio|http>` flag MAY be used to override but MUST NOT be required when the config is unambiguous.
+
+### 12.4 Transport errors
+
+`[MCLIP-12-05]` Connection failures (TCP refused, subprocess spawn failed, DNS failure, TLS error) MUST exit `69` with `origin: "transport"` in the error envelope.
+
+### 12.5 Timeout
+
+`[MCLIP-12-06]` Clients MUST honour `--timeout <seconds>` for individual requests. The default timeout for non-streaming requests is implementation-defined but MUST be finite. Streaming requests (§9) MUST NOT time out on idle output but MAY time out on initial connection.
+
+---
+
+## 13. Server discovery
+
+### 13.1 Config sources (priority order)
+
+`[MCLIP-13-01]` Conformant clients MUST resolve server configuration from these sources in priority order (later wins for keys present in both):
+
+1. `$MCLIP_CONFIG` environment variable (path to a config file)
+2. User config: `$XDG_CONFIG_HOME/mclip/config.json` (or `~/.config/mclip/config.json` if `XDG_CONFIG_HOME` is unset)
+3. User-home fallback: `~/.mclip.json`
+4. Project-local: `./mclip.json` (current working directory)
+
+### 13.2 Inherited config files
+
+`[MCLIP-13-02]` Clients SHOULD additionally discover and consume entries from these de-facto MCP config files (read-only; merged with lower priority than MCLIP-specific files above):
+
+- `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS Claude Desktop)
+- `%APPDATA%\Claude\claude_desktop_config.json` (Windows Claude Desktop)
+- `~/.config/Claude/claude_desktop_config.json` (Linux Claude Desktop)
+- `./.vscode/mcp.json`
+- `./.cursor/mcp.json`
+
+Inheriting entries from these files lowers adoption friction for users with existing MCP setups.
+
+### 13.3 Config schema
+
+`[MCLIP-13-03]` The canonical MCLIP config schema is:
+
+```json
+{
+  "$schema": "https://mclip.dev/schemas/config/v0.json",
+  "servers": {
+    "<server-name>": {
+      "transport": "stdio" | "http",
+      "command": "...",       // stdio only
+      "args": ["..."],        // stdio only
+      "env": { "...": "..." },// stdio only
+      "url": "https://...",   // http only
+      "headers": { "...": "..." }, // http only, optional
+      "auth": {
+        "token": "...",       // optional; prefer env var
+        "scheme": "Bearer"    // optional; defaults to Bearer
+      }
+    }
+  }
+}
+```
+
+`[MCLIP-13-04]` Clients MUST accept the existing `mcpServers` key (Claude Desktop convention) as a synonym for `servers`. When both are present, `servers` takes precedence and the client SHOULD print a warning to stderr.
+
+### 13.4 Server name resolution
+
+`[MCLIP-13-05]` The positional `<server>` argument in command invocations refers to a key in the merged config. Unknown server names MUST exit `78` (config error).
+
+---
+
+## 14. Destructive-action safeguards
+
+This section defines two layers. §14.0 is the **Core safety baseline** required by MCLIP-Core. §14.1–§14.3 define **MCLIP-Safety**, required only when that module is claimed.
+
+### 14.0 Core safety baseline (MCLIP-Core)
+
+`[MCLIP-14-00]` Core clients MUST treat a tool as **safe** only when its `annotations.readOnlyHint == true` is explicitly declared by the server. Any other tool — including one with `annotations.destructiveHint == false` and one with no annotations at all — MUST be treated as **potentially destructive**.
+
+`[MCLIP-14-01]` For a potentially-destructive tool invoked via `tools call`, if `--yes` (or `-y`) is NOT given AND stdin is NOT a TTY, Core clients MUST refuse to run and exit `64` with a clear stderr message naming the missing safeguard.
+
+`[MCLIP-14-02]` When stdin IS a TTY, a Core-only client (one that does not claim MCLIP-Safety) MAY run potentially-destructive tools without further safeguards. The interactive prompt UX is defined by MCLIP-Safety (§14.1) and is REQUIRED only when MCLIP-Safety is claimed.
+
+> Rationale: MCP spec warns *"Clients MUST consider tool annotations to be untrusted unless they come from trusted servers."* Treating `readOnlyHint == true` as the sole positive safe signal is the asymmetric safe choice — a hostile server lying that way exposes itself directly to scrutiny. Honouring `destructiveHint == false` as a skip-confirmation signal would let any server bypass safeguards by simply negating or omitting the destructive hint.
+
+### 14.1 Confirmation prompt (MCLIP-Safety)
+
+`[MCLIP-14-03]` MCLIP-Safety clients MUST prompt on stderr (`Proceed with <server> tools call <name>? [y/N]:`) for any potentially-destructive tool when stdin is a TTY and `--yes` was not given. The default response is `no` (empty input or any non-`y`/`yes` response refuses). The prompt MAY be customised via `mclip.confirm_message` (defined in the companion Extensions Track SEP — see §16).
+
+`[MCLIP-14-04]` MCLIP-Safety clients MUST accept `--yes` / `-y` to skip the prompt non-interactively. Behaviour with `--yes` is identical whether stdin is a TTY or not.
+
+`[MCLIP-14-05]` MCLIP-Safety clients MUST accept `--force` to override client-side validation warnings beyond the standard prompt. `--force` alone MUST NOT skip the confirmation prompt; `--force --yes` MUST.
+
+### 14.2 Dry-run (MCLIP-Safety)
+
+`[MCLIP-14-06]` MCLIP-Safety clients MUST accept `--dry-run` on `tools call`. When set, the client MUST NOT issue `tools/call`. Instead it MUST validate the input against `inputSchema` locally and print to stdout the JSON-RPC request that *would* have been sent. Exit `0` on validation pass, `65` on validation failure.
+
+> Note: MCP v2025-11-25 does not standardise a server-side dry-run flag. Future revisions of this profile may add server-side dry-run support if the MCP spec gains it.
+
+### 14.3 Trusted-server escape hatch (MCLIP-Safety)
+
+`[MCLIP-14-07]` MCLIP-Safety clients MAY honour a per-server "trust annotations" opt-in declared in the server config (§13.3). When a server is marked trusted, the client MAY honour `annotations.destructiveHint == false` as a skip-confirmation signal for that server only. Default is untrusted for every server. The exact config encoding (top-level `trusted: true`, `safety.trusted`, or other) is reserved for v0.1 alongside the conformance fixture corpus — see `todo.md` open items.
+
+> Rationale: advanced users who have vetted a specific server's annotations may opt out of confirm-by-default for that server. The escape hatch must be explicit per-server config, never inferred from server behaviour.
+
+---
+
+## 15. Conformance
+
+### 15.1 Conformance claim format
+
+`[MCLIP-15-01]` An implementation claims MCLIP v0 conformance with a statement of the form:
+
+> "<implementation> conforms to MCLIP v0 — Core + <module list>"
+
+where `<module list>` is a comma-separated list of zero or more module names drawn from §0.7. The shortest valid claim is "Core"; the fullest is "Core + Resources + Prompts + HTTP + Streaming + Safety + Auth + Metadata + Discovery".
+
+`[MCLIP-15-02]` A claim is valid only if the implementation passes every MUST in the Core sections (per §0.7 table) AND every MUST in each claimed module's sections. An implementation MAY claim Core alone. A claim of any module without Core is invalid and MUST NOT be advertised as MCLIP-conformant.
+
+### 15.2 Conformance test suite
+
+The MCLIP v0 conformance test suite (separate deliverable) is organised by module. Each test is tagged with the rule ID(s) it exercises and the module it belongs to. Implementations MAY submit selective test runs and publish per-module pass/fail results.
+
+### 15.3 Forwards compatibility
+
+`[MCLIP-15-03]` Implementations MAY exceed this profile (add flags, alternate forms, extensions) provided no extension changes the behaviour of conformant invocations defined here. An extension that causes a conformant invocation to produce different output, different exit code, or different stderr/stdout split is a conformance break.
+
+### 15.4 Versioning
+
+`[MCLIP-15-04]` This profile is versioned `v0`. Draft revisions are numbered (`draft v0 — revision 2` etc.) until v0 is frozen; subsequent freezes will increment to `v1`, `v2`, etc. Each revision specifies which previous rules are deprecated, modified, or unchanged (see Change log). Clients SHOULD declare which profile version and which modules they conform to via `<binary> --version`.
+
+### 15.5 Notable changes in v0 draft 2
+
+The following items changed since draft 1:
+
+- §9.5, §9.6 (task-augmented execution: `--follow`, `--detach`, `meta tasks *`) — DELETED. Task support deferred to MCLIP v1.
+- §14 (Destructive-action safeguards) — REWRITTEN. New rule §14.0 makes `readOnlyHint == true` the sole positive safe signal; `destructiveHint == false` no longer skips confirmation. Confirmation prompt, `--dry-run`, `--force`, and trusted-server escape hatch moved into MCLIP-Safety module.
+- §16 (CLI-metadata extension) — REWRITTEN. Key definitions removed from this profile; namespace reserved with key semantics deferred to a companion **Extensions Track SEP**.
+- §13.2 (inherited config files) — UNCHANGED in content, but reclassified as MCLIP-Discovery module rather than Core requirement.
+- §11 (Auth) — UNCHANGED in content, reclassified as MCLIP-Auth module rather than Core.
+- §12 (Transport) — split: stdio is Core, Streamable HTTP is MCLIP-HTTP module.
+
+Rule IDs are stable except where rules were deleted (no renumbering of surviving rules to keep test-suite references intact).
+
+---
+
+## 16. MCLIP-Metadata module — CLI-hint extension
+
+### 16.1 Status and home
+
+This module reserves the `mclip.*` namespace under MCP's `_meta` field for CLI-hint metadata. **The specific keys, their types, and their semantics are defined in a companion Extensions Track SEP** filed separately under the MCP Extensions process (per [SEP 2133 — Extensions](https://modelcontextprotocol.io/seps/2133-extensions)). This profile reserves the namespace and the trust posture; the Extensions SEP carries the key catalogue.
+
+`[MCLIP-16-01]` MCLIP-Core clients MUST function correctly against vanilla MCP servers that publish no `mclip.*` metadata. A client claims MCLIP-Metadata only when it implements every MUST rule for `mclip.*` keys in the companion Extensions SEP.
+
+> Pre-SEP status (v0 draft 2): the Extensions SEP is unfiled. Until it is filed and accepted, claiming MCLIP-Metadata is premature. Implementations that wish to experiment with `mclip.*` keys SHOULD do so behind an opt-in flag and SHOULD NOT advertise MCLIP-Metadata conformance.
+
+### 16.2 Namespace reservation
+
+`[MCLIP-16-02]` All MCLIP-defined metadata keys live under the `mclip.` prefix in `_meta`. Other namespaces (e.g. `vendor.foo`) MUST be ignored by MCLIP clients for the purpose of CLI surface generation. Clients MAY pass non-`mclip.*` `_meta` keys through to consumers (e.g. in `tools describe` JSON output) but MUST NOT let them influence command shape, flag mapping, or safety decisions.
+
+### 16.3 No privilege grant
+
+`[MCLIP-16-03]` Server-supplied `mclip.*` metadata MUST NOT relax safety defaults established in §14.0. Specifically: a server that sets `mclip.destructive: false` (a key the Extensions SEP will define) on a tool that is potentially destructive per §14.0 MUST still be treated as potentially destructive by the client. The metadata extension can tighten safety, never loosen it.
+
+> Rationale: MCP spec warns "Clients MUST consider tool annotations to be untrusted unless they come from trusted servers." Applying the same posture to MCLIP metadata prevents a hostile server from disabling confirmations. The trusted-server escape hatch (§14.3) is the only mechanism for opting into a less-strict posture, and it is per-server config, never server-supplied.
+
+### 16.4 Forward compatibility
+
+`[MCLIP-16-04]` Clients MUST treat unknown keys under the `mclip.` prefix as forwards-compatible: ignore them silently rather than error. This allows future versions of the Extensions SEP to introduce new keys without breaking existing clients.
+
+---
+
+## Appendix A — Reserved flag reference
+
+These flag names are reserved by MCLIP v0. Tool input schemas whose properties would generate these flag names MUST be remapped per §2.5.
+
+| Flag | Short | Section | Description |
+|---|---|---|---|
+| `--help` | `-h` | §1.5 | Print help, exit 0 |
+| `--version` | — | §1.4 | Print version, exit 0 |
+| `--output` | `-o` | §4.1 | Output format: text / json / ndjson |
+| `--no-color` | — | §4.2 | Disable ANSI color |
+| `--verbose` | `-v` | — | Increase stderr verbosity |
+| `--quiet` | `-q` | — | Suppress non-essential stderr |
+| `--input` | — | §2.7 | JSON tool input |
+| `--input-file` | — | §2.7 | Path to JSON tool input |
+| `--server` | — | — | Override positional server argument |
+| `--config` | — | §13 | Override config file path |
+| `--transport` | — | §12.3 | stdio / http override |
+| `--timeout` | — | §12.5 | Request timeout in seconds |
+| `--cursor` | — | §10.2 | Pagination cursor |
+| `--limit` | — | §10.3 | Max items |
+| `--no-paginate` | — | §10.4 | Single-page fetch |
+| `--dry-run` | — | §14.2 | Validate without invoking (MCLIP-Safety) |
+| `--yes` | `-y` | §14.1 | Skip confirmation (MCLIP-Safety; non-TTY-baseline in §14.0) |
+| `--force` | — | §14.1 | Override safety checks (MCLIP-Safety) |
+| `--auth-token` | — | §11.1 | Single-shot token (MCLIP-Auth) |
+
+---
+
+## Appendix B — Exit code reference
+
+| Code | Symbol (informal) | Section |
+|---|---|---|
+| 0 | OK | §6.1 |
+| 1 | GENERIC_ERROR | §6.1 |
+| 2 | CANCELLED | §6.2 |
+| 64 | USAGE | §6.1 |
+| 65 | DATA_ERROR | §6.1 |
+| 66 | NO_INPUT_FILE | §6.1 |
+| 69 | SERVER_UNAVAILABLE | §6.1, §12.5 |
+| 70 | INTERNAL_ERROR | §6.1 |
+| 75 | TEMP_FAIL | §6.1 |
+| 77 | NOPERM | §6.1 |
+| 78 | CONFIG_ERROR | §6.1, §13.4 |
+| 100 | TOOL_REPORTED_ERROR | §6.1, §5.2 |
+| 141 | SIGPIPE | §6.3 |
+
+---
+
+## Appendix C — Worked examples
+
+### C.1 Calling a tool
+
+```
+$ mclip linear tools call create_comment \
+    --issue-id ENG-123 \
+    --body "Looks good"
+
+# stdout (text mode):
+Created comment c_abc123 on ENG-123.
+
+# stderr: (empty on success)
+# exit: 0
+```
+
+JSON mode of the same call:
+
+```
+$ mclip -o json linear tools call create_comment --issue-id ENG-123 --body "Looks good"
+
+{
+  "result": {
+    "content": [
+      { "type": "text", "text": "Created comment c_abc123 on ENG-123." }
+    ],
+    "structuredContent": { "id": "c_abc123", "issue": "ENG-123" },
+    "isError": false
+  }
+}
+
+# exit: 0
+```
+
+### C.2 Destructive tool, non-interactive
+
+```
+$ mclip linear tools call delete_issue --issue-id ENG-123
+mclip: refusing to run destructive tool without --yes (non-interactive).
+# stderr above; stdout empty
+# exit: 64
+```
+
+### C.3 Destructive tool, interactive
+
+```
+$ mclip linear tools call delete_issue --issue-id ENG-123
+Proceed with linear tools call delete_issue? [y/N]: y
+Deleted issue ENG-123.
+# exit: 0
+```
+
+### C.4 Streaming tool (NDJSON)
+
+```
+$ mclip openai tools call stream_completion --prompt "Hello"
+{"chunk": "Hello"}
+{"chunk": ", world"}
+{"chunk": "."}
+{"done": true, "total_tokens": 5}
+# exit: 0
+```
+
+### C.5 Server unavailable
+
+```
+$ mclip linear tools list
+mclip: cannot connect to server "linear" (transport: stdio): exec: "linear-mcp": executable file not found in $PATH
+# stderr above
+# stdout (json mode):
+{
+  "error": {
+    "code": 69,
+    "message": "Cannot connect to MCP server",
+    "origin": "transport",
+    "data": { "server": "linear", "underlying": "exec failed" }
+  }
+}
+# exit: 69
+```
+
+### C.6 Tool reported error
+
+```
+$ mclip -o json linear tools call create_comment --issue-id NONEXISTENT --body "..."
+
+{
+  "result": {
+    "content": [{ "type": "text", "text": "Issue NONEXISTENT not found." }],
+    "isError": true
+  },
+  "error": {
+    "code": 100,
+    "message": "Tool reported error",
+    "origin": "tool"
+  }
+}
+# exit: 100
+```
+
+### C.7 Listing with pagination
+
+```
+$ mclip linear tools list --limit 50
+# Auto-paginates until 50 items collected OR nextCursor is absent
+# stdout: text rendering of tool list (50 entries)
+# exit: 0
+```
+
+---
+
+## References
+
+- [RFC 2119] Bradner, S., "Key words for use in RFCs to Indicate Requirement Levels"
+- [RFC 8174] Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"
+- [MCP 2025-11-25] Model Context Protocol Specification, [modelcontextprotocol.io/specification/2025-11-25](https://modelcontextprotocol.io/specification/2025-11-25)
+- [POSIX 12.2] IEEE 1003.1-2017, "Utility Syntax Guidelines", [pubs.opengroup.org](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html)
+- [GNU CLI] GNU Coding Standards, "Command-Line Interfaces", [gnu.org/prep/standards](https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html)
+- [clig.dev] Command Line Interface Guidelines, [clig.dev](https://clig.dev)
+- [sysexits] BSD `sysexits.h`, [man.freebsd.org](https://man.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3)
+- [JSON-RPC 2.0] [jsonrpc.org/specification](https://www.jsonrpc.org/specification)
+
+---
+
+## Change log
+
+- **v0 draft 2 (2026-05-15)**: Restructured into **MCLIP-Core + 8 optional modules** (Resources, Prompts, HTTP, Streaming, Safety, Auth, Metadata, Discovery) — see §0.7 conformance table and §15.1 claim format. Substantive changes: (1) §14 rewritten — only `annotations.readOnlyHint == true` is a positive safe signal, `destructiveHint == false` no longer skips confirmation by default; (2) §16 reserves the `mclip.*` namespace and defers key definitions to a companion **Extensions Track SEP**; (3) §9.5–§9.6 (task-augmented execution) removed entirely, with all task support deferred to MCLIP v1; (4) §11 Auth reclassified as MCLIP-Auth module; §12 Transport split (stdio Core, Streamable HTTP → MCLIP-HTTP module); §13.2 inherited config files → MCLIP-Discovery module. Rule IDs preserved except for deletions in §9.
+- **v0 draft 1 (2026-05-15)**: Initial draft. Status: pre-SEP, pre-implementation. Awaiting Transport WG discussion and reference-implementation prototype before formal SEP filing.
