@@ -1,0 +1,164 @@
+---
+import Base from "../layouts/Base.astro";
+
+const repo = "https://github.com/Quigleybits/clip";
+const blob = `${repo}/blob/main`;
+
+const specs = [
+  {
+    name: "Product Requirements (PRD)",
+    file: "prd.md",
+    desc: "Concept, scope, deliverables, success criteria, governance routing.",
+  },
+  {
+    name: "Profile v0",
+    file: "profile-v0.md",
+    desc: "Normative specification — Core plus eight independently-claimable modules. Each rule tagged [MCLIP-§-NN] for conformance tracking.",
+  },
+  {
+    name: "Security Model",
+    file: "security-model.md",
+    desc: "Trust boundaries, destructive-action policy, CI-safety, credential handling, optional auditability.",
+  },
+  {
+    name: "SEP — Standards Track",
+    file: "sep-standards-mclip-profile.md",
+    desc: "Standards Track SEP draft wrapping the profile for filing under modelcontextprotocol/seps.",
+  },
+  {
+    name: "SEP — Extensions Track",
+    file: "sep-extensions-mclip-metadata.md",
+    desc: "Optional mclip.* metadata keys filed per SEP-2133. Tightening-only safety semantics.",
+  },
+  {
+    name: "Conformance Fixtures",
+    file: "conformance-fixtures.md",
+    desc: "30+ executable fixtures mapping rules to invocations, expected exit codes, and output shapes.",
+  },
+];
+
+const modules = [
+  { name: "MCLIP-Core", note: "Required for any conformance claim" },
+  { name: "MCLIP-Resources", note: "First-class resources surface" },
+  { name: "MCLIP-Prompts", note: "First-class prompts surface" },
+  { name: "MCLIP-HTTP", note: "Standardised HTTP transport handling" },
+  { name: "MCLIP-Streaming", note: "Resources watch as NDJSON" },
+  { name: "MCLIP-Safety", note: "Confirmation, dry-run, force overrides" },
+  { name: "MCLIP-Auth", note: "Token resolution and transmission" },
+  { name: "MCLIP-Metadata", note: "Honours optional mclip.* keys" },
+  { name: "MCLIP-Discovery", note: "Inherited config files" },
+];
+---
+
+<Base
+  title="MCLIP"
+  description="A CLI conformance profile over MCP. One canonical CLI surface for every MCP server."
+>
+  <header class="hero">
+    <h1>MCLIP</h1>
+    <p class="tagline">
+      <strong>M</strong>CP <strong>C</strong>ommand-<strong>L</strong>ine
+      <strong>I</strong>nterface <strong>P</strong>rofile
+    </p>
+    <p class="lede">
+      A CLI conformance profile over MCP. If a service exposes an MCP server,
+      any MCLIP-conformant client produces the same scriptable surface for it &mdash;
+      the same command shape, the same flags, the same JSON envelope, the same
+      exit codes.
+    </p>
+  </header>
+
+  <section>
+    <h2>The problem</h2>
+    <p>
+      The MCP-to-CLI translation space is already crowded:
+      <code>mcp2cli</code>, <code>MCPorter</code>, <code>MCPShim</code>,
+      <code>FastMCP generate-cli</code>, Apify <code>mcpc</code>,
+      IBM <code>mcp-cli</code>, <code>developit/mcp-cmd</code>,
+      <code>f/mcptools</code>. Each picks its own flag conventions, command
+      shapes, output formats, error structures, and resource/prompt surfaces.
+    </p>
+    <p>
+      Result: <em>N MCP wrappers, N different CLI surfaces over the same MCP
+      server.</em> A script written against one wrapper does not run against
+      another. The audit (<a href={`${blob}/wrapper-audit.md`}>wrapper-audit.md</a>)
+      documents five concrete portability breakages.
+    </p>
+    <p>
+      MCLIP standardises the translation itself, so any conformant tool
+      produces the same scriptable surface for the same MCP server. It is not
+      a new protocol. It is not a vendor-side standard. It applies to the
+      tools that translate MCP into CLI &mdash; telling them how to do it
+      consistently.
+    </p>
+  </section>
+
+  <section>
+    <h2>What the profile defines</h2>
+    <p>
+      MCLIP-Core plus eight independently-claimable modules. A wrapper can
+      claim conformance on Core plus any subset of the modules its UX
+      supports.
+    </p>
+    <ul class="modules">
+      {modules.map((m) => (
+        <li>
+          <code>{m.name}</code>
+          <span class="module-note">{m.note}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Specifications</h2>
+    <p>
+      Source of truth lives in the GitHub repository. The files below are the
+      v0 draft set; everything is pre-publication and subject to revision.
+    </p>
+    <ul class="specs">
+      {specs.map((s) => (
+        <li>
+          <a href={`${blob}/${s.file}`}>
+            <span class="spec-name">{s.name}</span>
+            <span class="spec-file"><code>{s.file}</code></span>
+          </a>
+          <p class="spec-desc">{s.desc}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Schema namespace</h2>
+    <p>
+      The canonical MCLIP config schema is hosted under <code>mclip.dev</code>.
+      Clients and editors validating an <code>mclip.json</code> file should
+      reference the versioned URL below.
+    </p>
+    <p>
+      <a href="/schemas/config/v0.json"><code>https://mclip.dev/schemas/config/v0.json</code></a>
+    </p>
+    <p class="aside">
+      Draft 2020-12 JSON Schema. Tracks <a href={`${blob}/profile-v0.md`}>
+      <code>profile-v0.md</code></a> &sect;13.3. The schema URL is normatively
+      cited from the profile; the schema body is hand-maintained against the
+      spec until automated generation lands.
+    </p>
+  </section>
+
+  <section>
+    <h2>Current status</h2>
+    <p>
+      Pre-implementation. The seven core specification documents are written
+      and internally consistent. The Go reference CLI and nine synthetic MCP
+      fixture servers are designed but not yet coded; the conformance harness
+      and a companion-implementation repo follow once the CLI is functional.
+    </p>
+    <p>
+      External coordination &mdash; Discord problem-statement post, draft SEP
+      PR, wrapper-maintainer outreach &mdash; is on hold until the build block
+      is complete.
+    </p>
+  </section>
+</Base>

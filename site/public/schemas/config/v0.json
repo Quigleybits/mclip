@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mclip.dev/schemas/config/v0.json",
+  "title": "MCLIP Config",
+  "description": "Configuration schema for MCLIP-conformant clients, per profile-v0.md §13.3 (rule [MCLIP-13-03]). Top-level key 'servers' is canonical; 'mcpServers' is accepted as a synonym for Claude Desktop compatibility per [MCLIP-13-04].",
+  "type": "object",
+  "anyOf": [
+    { "required": ["servers"] },
+    { "required": ["mcpServers"] }
+  ],
+  "properties": {
+    "servers": {
+      "type": "object",
+      "description": "Map of server alias to server entry. Takes precedence over mcpServers when both are present; clients SHOULD warn on stderr.",
+      "additionalProperties": { "$ref": "#/$defs/serverEntry" }
+    },
+    "mcpServers": {
+      "type": "object",
+      "description": "Claude Desktop convention; accepted as a synonym for 'servers' per [MCLIP-13-04].",
+      "additionalProperties": { "$ref": "#/$defs/serverEntry" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "serverEntry": {
+      "type": "object",
+      "required": ["transport"],
+      "additionalProperties": false,
+      "properties": {
+        "transport": {
+          "description": "Transport mode for the MCP server.",
+          "enum": ["stdio", "http"]
+        },
+        "command": {
+          "type": "string",
+          "description": "Executable to launch (stdio transport only)."
+        },
+        "args": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Arguments passed to the executable (stdio transport only)."
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Environment variables for the launched process (stdio transport only)."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "MCP server URL (http transport only)."
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Optional HTTP headers (http transport only)."
+        },
+        "auth": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Optional inline auth. Prefer OS keychain or per-server environment variables per profile-v0.md §11.1.",
+          "properties": {
+            "token": {
+              "type": "string",
+              "description": "Bearer or scheme-specific token. Inline storage is permitted but discouraged; profile-v0.md §11.1 prefers OS keychain or per-server env var."
+            },
+            "scheme": {
+              "type": "string",
+              "description": "Authentication scheme. Defaults to 'Bearer' when omitted.",
+              "default": "Bearer"
+            }
+          }
+        },
+        "safety": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Per-server safety opt-ins. Subject to the project-local consent rule in [MCLIP-13-06].",
+          "properties": {
+            "trustAnnotations": {
+              "type": "boolean",
+              "default": false,
+              "description": "When true and the client claims MCLIP-Safety, the client MAY honour annotations.destructiveHint == false as a skip-confirmation signal for this server only ([MCLIP-14-07])."
+            },
+            "trustAnnotationsReason": {
+              "type": "string",
+              "description": "Human-readable audit string. SHOULD be non-empty when trustAnnotations is true ([MCLIP-13-07]). Does not influence client parsing or runtime behaviour."
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "transport": { "const": "stdio" } } },
+          "then": {
+            "required": ["command"],
+            "not": { "anyOf": [{ "required": ["url"] }, { "required": ["headers"] }] }
+          }
+        },
+        {
+          "if": { "properties": { "transport": { "const": "http" } } },
+          "then": {
+            "required": ["url"],
+            "not": {
+              "anyOf": [
+                { "required": ["command"] },
+                { "required": ["args"] },
+                { "required": ["env"] }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

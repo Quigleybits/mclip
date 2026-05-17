@@ -1,0 +1,237 @@
+:root {
+  --bg: #fafafa;
+  --bg-card: #ffffff;
+  --fg: #111111;
+  --fg-muted: #525252;
+  --fg-subtle: #737373;
+  --accent: #4338ca;
+  --accent-hover: #3730a3;
+  --border: #e5e5e5;
+  --code-bg: #f3f4f6;
+  --max-width: 720px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #141414;
+    --fg: #fafafa;
+    --fg-muted: #a3a3a3;
+    --fg-subtle: #737373;
+    --accent: #a5b4fc;
+    --accent-hover: #c7d2fe;
+    --border: #262626;
+    --code-bg: #1a1a1a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+    "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.55;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 4rem 1.5rem 2rem;
+}
+
+footer {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+}
+
+footer p {
+  margin: 1.5rem 0 0;
+}
+
+footer .status {
+  color: var(--fg-subtle);
+}
+
+.hero {
+  margin-bottom: 3rem;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  margin: 0 0 0.25rem;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+}
+
+.hero .tagline {
+  margin: 0 0 1.5rem;
+  color: var(--fg-muted);
+  font-size: 1.05rem;
+}
+
+.hero .tagline strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.hero .lede {
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: var(--fg);
+  margin: 0;
+}
+
+section {
+  margin: 3rem 0;
+}
+
+h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 1rem;
+}
+
+p {
+  margin: 0 0 1rem;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  font-size: 0.92em;
+  background: var(--code-bg);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+a code {
+  background: transparent;
+  padding: 0;
+}
+
+.modules {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem;
+}
+
+.modules li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.modules code {
+  background: transparent;
+  padding: 0;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.module-note {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+
+.specs {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.specs li {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.specs li:last-child {
+  border-bottom: none;
+}
+
+.specs a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  text-decoration: none;
+}
+
+.specs a:hover .spec-name {
+  text-decoration: underline;
+}
+
+.spec-name {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.spec-file {
+  color: var(--fg-subtle);
+  font-size: 0.9rem;
+}
+
+.spec-desc {
+  margin: 0.4rem 0 0;
+  color: var(--fg-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.aside {
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+  border-left: 3px solid var(--border);
+  padding: 0.25rem 0 0.25rem 1rem;
+  margin-left: 0;
+}
+
+@media (max-width: 540px) {
+  main {
+    padding: 2.5rem 1rem 1.5rem;
+  }
+  .hero h1 {
+    font-size: 2.25rem;
+  }
+  .hero .lede {
+    font-size: 1.05rem;
+  }
+  .specs a {
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+}
