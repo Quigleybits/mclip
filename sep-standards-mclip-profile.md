@@ -129,7 +129,7 @@ This profile pins to MCP 2025-11-25 as its declared baseline (`[MCLIP-15-05]`). 
 
 ## Reference Implementation
 
-The reference CLI is being developed in Go using the official Tier 1 Go MCP SDK (`github.com/modelcontextprotocol/go-sdk` v1.6.0). Architecture: `reference-cli-architecture.md`. Status at time of SEP filing: architectural spec complete; coding begins after sponsor signal per `problem-statement.md` execution sequence.
+The reference CLI is being developed in Go using the official Tier 1 Go MCP SDK (`github.com/modelcontextprotocol/go-sdk` v1.6.0). Architecture: `mclio-architecture.md`. Status at time of SEP filing: architectural spec complete; coding begins after sponsor signal per `problem-statement.md` execution sequence.
 
 The reference implementation:
 - Implements MCLIP-Core plus all eight optional modules (with MCLIP-Metadata behind a build tag pending the companion Extensions SEP).
@@ -162,7 +162,7 @@ The full conformance security checklist is in `security-model.md`.
 - Security model: `security-model.md` (draft 1.1)
 - Conformance fixture catalogue: `conformance-fixtures.md` (v0.2)
 - Fixture-server implementation spec: `fixtures-spec.md`
-- Reference-CLI architecture: `reference-cli-architecture.md`
+- Reference-CLI architecture: `mclio-architecture.md`
 - Wrapper audit (motivation evidence): `wrapper-audit.md`
 - Maintainer-facing comparison: `wrapper-comparison.md`
 - Adoption guide: `adoption-guide.md`

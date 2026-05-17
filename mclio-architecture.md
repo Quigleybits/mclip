@@ -1,15 +1,15 @@
-# MCLIP Reference CLI — Architecture Spec
+# mclio — Architecture Spec
 
-Version: 0.1 (2026-05-16)
+Version: 0.2 (2026-05-17)
 Status: implementation spec, aligned with `profile-v0.md` draft 2.2.
 
-Implementation language: **Go**, using the official Tier 1 Go MCP SDK. Per user decision: portable installation, fast startup, CI ergonomics, and executable conformance take priority over SDK ecosystem size. TypeScript remains in scope for fixtures and examples, not the reference binary.
+Implementation language: **Go**, using the official Tier 1 Go MCP SDK. Per user decision: portable installation, fast startup, CI ergonomics, and executable conformance take priority over SDK ecosystem size. TypeScript remains in scope for fixtures and examples, not the `mclio` binary.
 
 This document is the **architecture spec** for the next implementation session. It is a coder's brief, not a tutorial — it names the design decisions a Go implementer needs to make on day one, with rationale.
 
 ## Design intent
 
-The reference CLI is **the executable reference for the standard**. Its job is to be boring and correct, not to win the feature race against `mcp2cli`, `MCPorter`, or `MCPShim`. Three implementation principles flow from that:
+`mclio` is the production-grade MCP→CLI tool that doubles as **the executable reference for the MCLIP standard**. Its job is two-fold: be the tool people install for daily use, AND be the unambiguous tie-breaker when implementers ask "what does the spec mean here?" Boring, correct, fast, small. It does not compete on features with `mcp2cli`, `MCPorter`, or `MCPShim`; its differentiator is *faithful and polished*, not *feature-rich*. Three implementation principles flow from that:
 
 1. **Spec-faithfulness over ergonomics.** When a spec rule and an ergonomic shortcut conflict, the spec wins. No "we know users want X" overrides.
 2. **Thin abstractions.** The CLI is a pipeline: parse args → resolve config → resolve credentials → connect transport → dispatch verb → render output. Each step is one file, one ~100-line function. New behaviour is added by extending the table, not refactoring the pipeline.
@@ -18,8 +18,8 @@ The reference CLI is **the executable reference for the standard**. Its job is t
 ## Package layout
 
 ```
-github.com/<org>/mclip-reference/
-├── cmd/mclip/                  // main entrypoint; tiny — just wires up the pipeline
+github.com/Quigleybits/mclio/
+├── cmd/mclio/                  // main entrypoint; tiny — just wires up the pipeline
 │   └── main.go
 ├── internal/
 │   ├── argv/                   // global-flag detection + canonical-shape parser (§1.2)
@@ -56,7 +56,7 @@ The MCP SDK does the heavy lifting (JSON-RPC framing, transport handling, server
 | Pretty errors / colour | **None.** Plain ANSI codes via constants in `internal/render`. `--no-color` and `NO_COLOR` env var disable. | Adding a colour library buys very little and adds dependency surface. |
 | Testing | Standard `testing` package; `testscript` for end-to-end CLI tests | The conformance harness (separate deliverable) is the integration story. Unit tests use plain `testing`. |
 
-**Versions:** pin everything in `go.mod`; do not depend on `latest`. The reference implementation MUST be reproducible.
+**Versions:** pin everything in `go.mod`; do not depend on `latest`. The `mclio` binary MUST be reproducible.
 
 ## Two-phase parser contract
 
@@ -146,13 +146,13 @@ stdin  -->  arg parse  | argv.Parse        |  --> error 64 if syntax invalid
 ```
 
 Cross-cutting:
-- `SIGINT` handler installed in `cmd/mclip/main.go`. On signal, the in-flight transport call is cancelled (best-effort `notifications/cancelled`) and the process exits 130 per §6.2.
+- `SIGINT` handler installed in `cmd/mclio/main.go`. On signal, the in-flight transport call is cancelled (best-effort `notifications/cancelled`) and the process exits 130 per §6.2.
 - `SIGPIPE` handler per §6.3.
 - A single `slog` logger writes to stderr. Verbosity controlled by `--verbose`/`--quiet`. Never writes to stdout.
 
 ## Conformance-level boundaries inside the codebase
 
-Module conformance maps to Go build tags AND/OR feature flags. The reference CLI will ship Core + all 8 modules in v0; the boundaries are kept clean so a downstream consumer can re-target the binary to Core-only if needed.
+Module conformance maps to Go build tags AND/OR feature flags. `mclio` ships Core + all 8 modules in v0; the boundaries are kept clean so a downstream consumer can re-target the binary to Core-only if needed.
 
 | Module | Where it lives | Toggle |
 |---|---|---|
@@ -186,7 +186,7 @@ Three layers:
 ## Coder hand-off — what to do on day 1
 
 1. Verify the Tier 1 Go SDK package path with `go list -m github.com/modelcontextprotocol/go-sdk@latest` (research agent's `real-mcp-servers.md` will confirm).
-2. Scaffold the package layout above. Empty stubs for each package; `cmd/mclip/main.go` prints "not implemented" to stderr and exits 70.
+2. Scaffold the package layout above. Empty stubs for each package; `cmd/mclio/main.go` prints "not implemented" to stderr and exits 70.
 3. Build the §6.1 exit-code table in `internal/exits/codes.go` and the §5.2 envelope in `internal/envelope/envelope.go` first — every other package depends on these.
 4. Build `argv.Parse` second — it's the highest-leverage piece; once it works, every subsequent test can drive the CLI by argv.
 5. Pick one verb (`tools list`) and implement the full pipeline end-to-end against the `fx-echo` fixture server. That single path proves the architecture.

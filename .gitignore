@@ -1,0 +1,13 @@
+# Fixture-server build artifacts (per-server `go build` output).
+fixtures/servers/*/*.exe
+fixtures/servers/*/fx-*
+!fixtures/servers/*/fx-*.go
+!fixtures/servers/*/fx-*.md
+
+# Verify-harness binary.
+fixtures/verify/verify
+fixtures/verify/verify.exe
+
+# Stray probe / debug logs.
+fixtures/servers/*/*.log
+fixtures/servers/*/*.tmp

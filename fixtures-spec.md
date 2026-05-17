@@ -20,8 +20,8 @@ This document is the **implementation spec** for the synthetic MCP servers that 
 
 ## Language and SDK
 
-- **Primary language: Go.** Same language as the reference CLI (per user decision). Uses the official Tier 1 Go MCP SDK.
-- **TypeScript permitted for servers that need Streamable HTTP + a maintained MCP HTTP server library.** The Go SDK's HTTP server surface is the canonical path; TS is the fallback if HTTP server primitives are awkward in Go at spec time. (Reference CLI architecture doc tracks this dependency choice.)
+- **Primary language: Go.** Same language as `mclio` (per user decision). Uses the official Tier 1 Go MCP SDK.
+- **TypeScript permitted for servers that need Streamable HTTP + a maintained MCP HTTP server library.** The Go SDK's HTTP server surface is the canonical path; TS is the fallback if HTTP server primitives are awkward in Go at spec time. (`mclio-architecture.md` tracks this dependency choice.)
 - All servers compiled / runnable from `fixtures/servers/<server-name>/`. Each server has a `README.md` that names the fixtures it backs.
 
 ## Server catalogue
@@ -127,11 +127,11 @@ These conventions are normative for the fixture servers themselves so the harnes
 
 ## Harness contract
 
-The conformance harness (separate deliverable in P1) wraps the fixture servers and the reference CLI together. Per-fixture, the harness:
+The conformance harness (separate deliverable in P1) wraps the fixture servers and `mclio` together. Per-fixture, the harness:
 
 1. Starts the named server (subprocess for stdio; HTTP listener on an ephemeral port for HTTP servers).
 2. Resolves the server's address into a synthetic `<binary> <server> ...` invocation — either by writing a temporary `mclip.json` or by passing `--config` to point at a pre-baked config under `fixtures/configs/`.
-3. Invokes the reference CLI with the fixture's command line.
+3. Invokes `mclio` with the fixture's command line.
 4. Captures stdout, stderr, exit code, AND (for HTTP fixtures) the raw HTTP requests the server received.
 5. Compares against the fixture's expected outputs. Comparison rules:
    - Exit code: exact.
@@ -181,9 +181,9 @@ These three contracts are normative for the conformance harness. A harness imple
 
 ## Build / CI
 
-- Each fixture server has its own `go.mod` (or `package.json` for the TS HTTP one if needed); they DO NOT share a build with the reference CLI.
+- Each fixture server has its own `go.mod` (or `package.json` for the TS HTTP one if needed); they DO NOT share a build with `mclio`.
 - The harness depends on compiled fixture-server binaries; it does NOT recompile them per test run.
-- CI workflow: build all fixture servers → build reference CLI → run harness → publish results.
+- CI workflow: build all fixture servers → build `mclio` → run harness → publish results.
 
 ## Coverage map (fixture → server)
 

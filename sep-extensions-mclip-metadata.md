@@ -193,7 +193,7 @@ This SEP is purely additive.
 
 ## Reference Implementation
 
-The MCLIP reference CLI (per `reference-cli-architecture.md`) will implement MCLIP-Metadata as a build-tag-controlled package (`internal/verbs/_metadata`). The package is stubbed pending this SEP reaching Accepted status; the build tag is off by default until then. Once this SEP is Accepted, the implementation will:
+The MCLIP reference CLI (per `mclio-architecture.md`) will implement MCLIP-Metadata as a build-tag-controlled package (`internal/verbs/_metadata`). The package is stubbed pending this SEP reaching Accepted status; the build tag is off by default until then. Once this SEP is Accepted, the implementation will:
 
 1. Honour `mclip.aliases` in command resolution.
 2. Render `mclip.examples` in `tools describe` output.

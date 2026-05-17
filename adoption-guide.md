@@ -100,10 +100,10 @@ The cost of adding MCLIP-Core depends heavily on how far your wrapper's existing
 | Your wrapper's shape | Likely Core-migration cost | What needs writing |
 |---|---|---|
 | **Shape A — close to canonical** (e.g. MCPorter's `<binary> call <server>.<tool>`, MCPShim's `--server X --tool Y`): your invocation lines up, you already emit long flags, you already have a JSON output mode. | **Days of focused work.** Renderer/exit-code remap + credential-pipeline plumbing + conformance-harness integration. | A `--mclip` flag that switches renderer + exit codes + credential resolution to spec; a small input-mode shim if your arg parser differs from long-flags-from-schema. |
-| **Shape B — moderate divergence** (e.g. wrappers using `key:value` colon flags or `key:=value` typed pairs): your discovery and transport are fine, but argument parsing has to be re-emitted. | **One to two weeks.** Add a parallel parser; keep the existing one untouched; route to the parallel one when `--mclip` is set. | Above, plus a parallel schema-aware flag generator (the two-phase parser pattern from `reference-cli-architecture.md` is the reference design). |
+| **Shape B — moderate divergence** (e.g. wrappers using `key:value` colon flags or `key:=value` typed pairs): your discovery and transport are fine, but argument parsing has to be re-emitted. | **One to two weeks.** Add a parallel parser; keep the existing one untouched; route to the parallel one when `--mclip` is set. | Above, plus a parallel schema-aware flag generator (the two-phase parser pattern from `mclio-architecture.md` is the reference design). |
 | **Shape C — fundamental incompatibility** (e.g. mcp2cli's server-as-binary, mcpc's session-prefix): your top-level invocation shape cannot host `<server> <category> <verb>` without colliding with your existing UX. | **Several weeks to a small project.** A self-contained sub-command (`<binary> mclip ...`) that re-uses your wrapper's transport + discovery + auth code but with its own argv parser, renderer, exit-code table, and config-source pipeline. | Above, plus the sub-command scaffolding, its own help text, and a separate test surface for the sub-command's conformance. |
 
-The reference implementation (`reference-cli-architecture.md`) gives you the design for the new pipeline pieces; don't try to invent your own from `profile-v0.md` alone.
+`mclio` (per `mclio-architecture.md`) gives you the design for the new pipeline pieces; don't try to invent your own from `profile-v0.md` alone.
 
 ## Step-by-step: adding MCLIP-Core
 
@@ -113,7 +113,7 @@ For a wrapper that already speaks MCP, has its own opinionated UX, and wants to 
 2. **Read `conformance-fixtures.md` and pick the 5-10 fixtures most likely to break against your wrapper today.** That's your TDD list. Use the harness contracts from `fixtures-spec.md` so you understand what "passing" actually measures.
 3. **If Shape C, scaffold the parallel sub-command first.** Don't try to bolt MCLIP onto the existing invocation parser; the conformance failures hide in the boundary. The sub-command sees clean argv from the first character.
 4. **Implement the §6.1 exit-code table and the §5.2 envelope.** Every other piece of the migration assumes correct exit codes and envelope shape. Get these right first.
-5. **Implement the two-phase argv parser** (per `reference-cli-architecture.md` "Two-phase parser contract"). Phase 1 (global flags + path) runs before any transport / schema discovery; Phase 2 (generated tool flags) runs after `tools/list` has returned. A single-phase parser will fail FX-GLOBAL-03 and FX-COLLIDE-02.
+5. **Implement the two-phase argv parser** (per `mclio-architecture.md` "Two-phase parser contract"). Phase 1 (global flags + path) runs before any transport / schema discovery; Phase 2 (generated tool flags) runs after `tools/list` has returned. A single-phase parser will fail FX-GLOBAL-03 and FX-COLLIDE-02.
 6. **Wire up the §11 credential priority order** (keychain → per-server env → config), behind your existing transport. The conformance harness asserts on the resolved `Authorization` header; the path that gets there is yours.
 7. **Add the §14.0 destructive-in-non-TTY refusal** and the `[MCLIP-14-15]` specific-exit-code discipline. These are mechanical once the renderer + exit-code table are in.
 8. **Add the §14.4 CI-safe rollup checks**: `isatty(stdin)` detection, no env-var-only opt-in to non-TTY mode, no-secret-leak in error envelopes, deterministic JSON output (object-key ordering stable, no walltime in output).
@@ -158,5 +158,5 @@ If you respond to any of those, please CC `aidan@<TBD>` so feedback isn't lost i
 - `security-model.md` — the companion trust / destructive-action / CI-safe model.
 - `conformance-fixtures.md` — the per-rule fixture catalogue.
 - `fixtures-spec.md` — implementation spec for the synthetic MCP fixture servers.
-- `reference-cli-architecture.md` — the Go reference implementation's design, for comparison with your own implementation.
+- `mclio-architecture.md` — the design for `mclio` (the production CLI / executable reference), for comparison with your own implementation.
 - `wrapper-audit.md` + `wrapper-comparison.md` — the fragmentation evidence behind MCLIP's existence.
