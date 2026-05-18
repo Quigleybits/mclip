@@ -97,8 +97,14 @@ footer .status {
   margin: 0;
 }
 
-.hero .repo-link {
+.hero .mcp-gloss {
   margin: 1rem 0 0;
+  font-size: 0.95rem;
+  color: var(--fg-muted);
+}
+
+.hero .repo-link {
+  margin: 0.5rem 0 0;
   font-size: 0.95rem;
   color: var(--fg-muted);
 }
@@ -216,6 +222,30 @@ a code {
   color: var(--fg-muted);
   font-size: 0.95rem;
   line-height: 1.5;
+}
+
+.example {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.9rem 1rem;
+  margin: 0 0 1rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.example code {
+  background: transparent;
+  padding: 0;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  color: var(--fg);
+  white-space: pre;
+}
+
+.example .comment {
+  color: var(--fg-subtle);
 }
 
 .mapping {

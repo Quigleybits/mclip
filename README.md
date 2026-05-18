@@ -16,6 +16,22 @@ A standards-documentation project for MCLIP — a profile that defines how MCP-t
 
 The MCP-to-CLI translation space already exists and is crowded (`mcp2cli`, `MCPorter`, `MCPShim`, `f/mcptools`, `FastMCP generate-cli`, Apify `mcpc`, IBM `mcp-cli`, `developit/mcp-cmd`). Each picks its own flag conventions, command shapes, output formats, error structures, and resource/prompt surfaces. A script written for one of them does not run against another. MCLIP standardises the translation itself.
 
+Concretely — the same MCP tool, across wrappers:
+
+```bash
+# f/mcptools
+mcp call create_issue --params '{"title":"Bug","body":"..."}' \
+  npx -y @modelcontextprotocol/server-github
+
+# Apify mcpc
+mcpc @github tools-call create_issue title:="Bug" body:="..."
+
+# Under MCLIP, every conformant wrapper:
+<binary> github tools call create_issue --title "Bug" --body "..."
+```
+
+Different command verbs, different argument styles, different server references, different output shapes. MCLIP-Core ([profile-v0.md §1.2, §2.5, §5](profile-v0.md)) pins all four.
+
 ## How MCP maps to the CLI
 
 MCLIP doesn't try to turn every MCP message into a shell command. The projection draws three lines:

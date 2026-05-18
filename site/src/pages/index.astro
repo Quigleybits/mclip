@@ -76,6 +76,11 @@ const modules = [
       the same command shape, the same flags, the same JSON envelope, the same
       exit codes.
     </p>
+    <p class="mcp-gloss">
+      New to MCP? It's the open standard for connecting AI applications to
+      external tools and data &mdash;
+      <a href="https://modelcontextprotocol.io">modelcontextprotocol.io</a>.
+    </p>
     <p class="repo-link">
       Source: <a href={repo}>{repo.replace("https://", "")}</a>
     </p>
@@ -117,6 +122,22 @@ const modules = [
       a new protocol. It is not a vendor-side standard. It applies to the
       tools that translate MCP into CLI &mdash; telling them how to do it
       consistently.
+    </p>
+    <p>Concretely &mdash; the same MCP tool, across wrappers:</p>
+    <pre class="example"><code><span class="comment"># f/mcptools</span>
+mcp call create_issue --params '&#123;"title":"Bug","body":"..."&#125;' \
+  npx -y @modelcontextprotocol/server-github
+
+<span class="comment"># Apify mcpc</span>
+mcpc @github tools-call create_issue title:="Bug" body:="..."
+
+<span class="comment"># Under MCLIP, every conformant wrapper:</span>
+&lt;binary&gt; github tools call create_issue --title "Bug" --body "..."</code></pre>
+    <p>
+      Different command verbs, different argument styles, different server
+      references, different output shapes. MCLIP-Core
+      (<a href={`${blob}/profile-v0.md`}>&sect;1.2, &sect;2.5, &sect;5</a>)
+      pins all four.
     </p>
   </section>
 
@@ -246,10 +267,6 @@ const modules = [
       standard's executable reference &mdash; is in active development as a
       separate Go binary; not yet released. Conformance harness and a
       companion consumer app follow once <code>mclio</code> is functional.
-    </p>
-    <p>
-      External coordination &mdash; Discord post, draft SEP PR, wrapper-maintainer
-      outreach &mdash; is on hold until the build block is complete.
     </p>
   </section>
 </Base>
