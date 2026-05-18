@@ -16,6 +16,18 @@ A standards-documentation project for MCLIP — a profile that defines how MCP-t
 
 The MCP-to-CLI translation space already exists and is crowded (`mcp2cli`, `MCPorter`, `MCPShim`, `f/mcptools`, `FastMCP generate-cli`, Apify `mcpc`, IBM `mcp-cli`, `developit/mcp-cmd`). Each picks its own flag conventions, command shapes, output formats, error structures, and resource/prompt surfaces. A script written for one of them does not run against another. MCLIP standardises the translation itself.
 
+## How MCP maps to the CLI
+
+MCLIP doesn't try to turn every MCP message into a shell command. The projection draws three lines:
+
+| MCP element | MCLIP treatment |
+|---|---|
+| **Tools, resources, prompts** | User-facing commands. Tool input schemas project to long flags; results project to a JSON envelope on stdout. Resources expose `list`/`read`/`templates`/`watch`; prompts expose `list`/`get`. |
+| **Sampling, elicitation, roots** | Runtime mechanics, not standalone commands. Surface as flags, interactive prompts (with non-interactive refusal per §14.12), or config — not invocations. |
+| **Initialize, transport, pagination, auth, progress, cancellation, diagnostics** | CLI infrastructure: hidden handshake, `--transport`, `--timeout`, `--cursor`/`--limit`/`--no-paginate`, env-var credentials (§11), NDJSON progress on stderr (MCLIP-Streaming), `SIGINT` cancellation (§6.2), `--verbose`/`--quiet`. |
+
+MCP **primitives** become commands; MCP **schemas** become input contracts; MCP **responses** become a JSON envelope; MCP **lifecycle and interaction mechanics** become CLI runtime behaviour. The nine conformance modules in [`profile-v0.md`](profile-v0.md) §0.7 are organised around this split.
+
 ## Specification set
 
 Read in this order to orient:

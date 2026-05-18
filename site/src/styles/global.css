@@ -218,6 +218,77 @@ a code {
   line-height: 1.5;
 }
 
+.mapping {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+}
+
+.mapping th,
+.mapping td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.65rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.mapping thead th {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.mapping tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.mapping td:first-child {
+  width: 32%;
+  color: var(--fg);
+}
+
+.mapping td strong {
+  font-weight: 600;
+}
+
+.mapping code {
+  font-size: 0.88em;
+}
+
+@media (max-width: 540px) {
+  .mapping,
+  .mapping thead,
+  .mapping tbody,
+  .mapping tr,
+  .mapping th,
+  .mapping td {
+    display: block;
+    width: 100%;
+  }
+  .mapping thead {
+    display: none;
+  }
+  .mapping tr {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .mapping tr:last-child {
+    border-bottom: none;
+  }
+  .mapping td {
+    padding: 0.15rem 0;
+    border: none;
+  }
+  .mapping td:first-child {
+    width: auto;
+    margin-bottom: 0.25rem;
+  }
+}
+
 .aside {
   font-size: 0.9rem;
   color: var(--fg-muted);

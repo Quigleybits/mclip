@@ -121,6 +121,68 @@ const modules = [
   </section>
 
   <section>
+    <h2>How MCP maps to the CLI</h2>
+    <p>
+      MCLIP doesn't try to turn every MCP message into a shell command. The
+      projection draws three lines:
+    </p>
+    <table class="mapping">
+      <thead>
+        <tr>
+          <th>MCP element</th>
+          <th>MCLIP treatment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Tools, resources, prompts</strong></td>
+          <td>
+            User-facing commands. Tool input schemas project to long flags;
+            results project to a JSON envelope on stdout. Resources expose
+            <code>list</code>/<code>read</code>/<code>templates</code>/<code
+              >watch</code
+            >; prompts expose <code>list</code>/<code>get</code>.
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Sampling, elicitation, roots</strong></td>
+          <td>
+            Runtime mechanics, not standalone commands. Surface as flags,
+            interactive prompts (with non-interactive refusal per
+            <a href={`${blob}/profile-v0.md`}>&sect;14.12</a>), or config
+            &mdash; not invocations.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <strong
+              >Initialize, transport, pagination, auth, progress, cancellation,
+              diagnostics</strong
+            >
+          </td>
+          <td>
+            CLI infrastructure: hidden handshake, <code>--transport</code>,
+            <code>--timeout</code>,
+            <code>--cursor</code>/<code>--limit</code>/<code>--no-paginate</code>,
+            env-var credentials (&sect;11), NDJSON progress on stderr
+            (MCLIP-Streaming), <code>SIGINT</code> cancellation (&sect;6.2),
+            <code>--verbose</code>/<code>--quiet</code>.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      MCP <strong>primitives</strong> become commands; MCP <strong
+        >schemas</strong
+      > become input contracts; MCP <strong>responses</strong> become a JSON
+      envelope; MCP <strong>lifecycle and interaction mechanics</strong> become
+      CLI runtime behaviour. The nine conformance modules in <a
+        href={`${blob}/profile-v0.md`}><code>profile-v0.md</code></a
+      > &sect;0.7 are organised around this split.
+    </p>
+  </section>
+
+  <section>
     <h2>What the profile defines</h2>
     <p>
       MCLIP-Core plus eight independently-claimable modules. A wrapper can
