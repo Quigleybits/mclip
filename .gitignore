@@ -11,3 +11,6 @@ fixtures/verify/verify.exe
 # Stray probe / debug logs.
 fixtures/servers/*/*.log
 fixtures/servers/*/*.tmp
+
+# Vercel link state (per-machine).
+.vercel/
