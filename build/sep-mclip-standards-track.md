@@ -2,7 +2,7 @@
 
 SEP: TBD — to be assigned by Core Maintainers on PR open
 Title: MCLIP — MCP Command-Line Interface Profile (v0)
-Author: Aidan Quigley (`@Quigleybits`, aidanjohnquigley@gmail.com)
+Author: Aidan Quigley (`@Quigleybits`, aidey@mclip.dev)
 Status: Pre-Draft — pending PR open and sponsor signal; will move to Draft upon sponsorship per [MCP SEP guidelines](https://modelcontextprotocol.io/community/sep-guidelines)
 Type: Standards Track
 Created: 2026-05-16

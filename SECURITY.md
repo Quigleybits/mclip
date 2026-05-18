@@ -23,7 +23,7 @@ The [`security-model.md`](security-model.md) document defines the trust boundari
 
 For non-sensitive findings (spec wording, fixture coverage gap), open a public issue. Most spec-level security issues are public-by-design — being able to discuss the threat openly is part of what fixes them.
 
-For findings that you believe would be unsafe to disclose publicly before a fix lands (rare for a draft spec, but possible), email `aidey@mclip.dev` (in setup) with `[SECURITY]` in the subject line. Until that mailbox is live, use `aidanjohnquigley@gmail.com` with the same subject prefix.
+For findings that you believe would be unsafe to disclose publicly before a fix lands (rare for a draft spec, but possible), email `aidey@mclip.dev` with `[SECURITY]` in the subject line.
 
 Expected response time:
 
