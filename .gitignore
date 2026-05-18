@@ -14,3 +14,7 @@ fixtures/servers/*/*.tmp
 
 # Vercel link state (per-machine).
 .vercel/
+
+# Private dev companion (Quigleybits/mclip-dev) is nested here as its own
+# git repo so the IDE sees one workspace. Never staged into public history.
+/_dev/
