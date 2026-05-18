@@ -2,9 +2,8 @@
 
 This tree contains the **9 synthetic MCP fixture servers** that back the MCLIP
 conformance fixture catalogue. See `fixtures-spec.md` (repo root) for the full
-implementation spec and the fixture-ID → server mapping. See
-`decisions/2026-05-16-mcp-server-prototype-set.md` for the Go SDK pin
-(`github.com/modelcontextprotocol/go-sdk` v1.6.0).
+implementation spec and the fixture-ID → server mapping. Go SDK pin:
+`github.com/modelcontextprotocol/go-sdk` v1.6.0.
 
 Each server is a minimal, deterministic MCP server whose tools / resources /
 prompts exist solely to exercise specific MCLIP rules. Servers are not example

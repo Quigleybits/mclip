@@ -149,7 +149,7 @@ Where:
 
 `[MCLIP-1-06]` MCLIP uses **category-then-verb** ordering (`tools list`, `tools call`, `resources read`). Implementations MUST NOT define equivalent verb-then-category top-level aliases (e.g. `mclip list tools`) at the conformance-tested surface, to ensure script portability. Users MAY add their own shell aliases.
 
-> Rationale: Modern noun-verb shape (docker, gcloud, aws, gh) lets the three MCP capability areas namespace their verbs symmetrically. The audit (`wrapper-audit.md`) found five distinct invocation shapes across existing wrappers; locking one is the highest-leverage portability fix.
+> Rationale: Modern noun-verb shape (docker, gcloud, aws, gh) lets the three MCP capability areas namespace their verbs symmetrically. The audit found five distinct invocation shapes across existing wrappers; locking one is the highest-leverage portability fix.
 
 ---
 
@@ -562,7 +562,7 @@ Inheriting entries from these files lowers adoption friction for users with exis
 
 `[MCLIP-13-03]` The canonical MCLIP config schema is:
 
-> Canonical schema URL: `https://mclip.dev/schemas/config/v0.json`. `mclip.dev` is project-controlled as of 2026-05-16 (see `naming-check.md`). GitHub remains the source repository for the specification and implementation work; `mclip.dev` is the stable public front door and schema namespace, and MAY redirect to repository-hosted source artifacts.
+> Canonical schema URL: `https://mclip.dev/schemas/config/v0.json`. `mclip.dev` is project-controlled as of 2026-05-16. GitHub remains the source repository for the specification and implementation work; `mclip.dev` is the stable public front door and schema namespace, and MAY redirect to repository-hosted source artifacts.
 
 ```json
 {
@@ -949,7 +949,10 @@ $ mclip linear tools list --limit 50
 
 ### Process and governance (non-normative)
 
-Governance, SEP workflow, working-group, and maintainer references are consolidated in `prd.md` §13. This profile cites them only via that section, so the link set has a single source of truth and stays in sync across all repository documents.
+- MCP project governance: https://modelcontextprotocol.io/community/governance
+- MCP 2025-11-25 specification: https://modelcontextprotocol.io/specification/2025-11-25
+- MCP 2025-11-25 Authorization: https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization
+- SEP guidelines: https://modelcontextprotocol.io/community/sep-guidelines
 
 ---
 

@@ -37,7 +37,7 @@ This addresses the structural concern that a SEP draft pointing at companion fil
 
 MCP's promise to users is *"if a service has adopted MCP, you automatically know how to interact with it."* In an LLM-mediated chat context, that promise holds: clients translate user intent into `tools/call` requests transparently. In a scripting / CLI context, it doesn't.
 
-An audit of the eight currently-published MCP-to-CLI wrappers (`wrapper-audit.md`, 2026-05-15) found five concrete portability failures across the wrapper set: argument-passing style, JSON output flag + shape, invocation pattern, array encoding, and server reference. A bash script written against one wrapper silently fails or errors when run against another. Today, the MCP CLI promise holds *within* each wrapper, not *across* them.
+An audit of the eight currently-published MCP-to-CLI wrappers found five concrete portability failures across the wrapper set: argument-passing style, JSON output flag + shape, invocation pattern, array encoding, and server reference. A bash script written against one wrapper silently fails or errors when run against another. Today, the MCP CLI promise holds *within* each wrapper, not *across* them.
 
 The wrapper space has organic convergence on only two narrow points: `--json` as the plurality choice for the JSON output flag (4 of 8 wrappers), and consumption of the de-facto `~/.vscode/mcp.json` configuration format (2 of 8 wrappers, independently). Nothing else. There is no evidence of deliberate cross-wrapper coordination.
 
@@ -65,7 +65,7 @@ A claim takes the form *"X conforms to MCLIP v0 — Core + <modules>"*. Core alo
 
 ### High-leverage rules
 
-The following rules address the five fragmentation points from `wrapper-audit.md` directly:
+The following rules address the five fragmentation points directly:
 
 | Audit failure | Resolving rule(s) |
 |---|---|
@@ -97,7 +97,7 @@ A wrapper that already speaks HTTP, exposes resources, and ignores prompts shoul
 
 ### Why specify the JSON envelope shape, not just the flag name?
 
-`wrapper-audit.md` found that 4 of 8 wrappers agree on `--json` as the flag, but disagree on the resulting *shape* (`mcp2cli` wraps in a custom `app_id`/`summary` envelope; `mcpc` enforces MCP-spec schemas; others emit raw tool results). A consumer parsing one wrapper's JSON output cannot use the same parser against another. Specifying both the flag and the shape is the only way to make the "JSON output is portable" claim true.
+The audit found that 4 of 8 wrappers agree on `--json` as the flag, but disagree on the resulting *shape* (`mcp2cli` wraps in a custom `app_id`/`summary` envelope; `mcpc` enforces MCP-spec schemas; others emit raw tool results). A consumer parsing one wrapper's JSON output cannot use the same parser against another. Specifying both the flag and the shape is the only way to make the "JSON output is portable" claim true.
 
 ### Why `readOnlyHint == true` as the sole positive safe signal?
 
@@ -109,7 +109,7 @@ Per SEP-2133, Extensions Track is the canonical home for additive vocabularies t
 
 ### Why direct individual-contributor filing instead of a WG?
 
-The Transports WG charter explicitly excludes application-layer profiles. No tooling/hosting WG exists. SEP-986 (tool name format conformance) and SEP-1730 (SDK tiering) are direct structural precedents: Standards Track SEPs specifying implementor-side conformance without wire-protocol changes, filed by individual contributors. See `governance-recommendation.md` for the full analysis.
+The Transports WG charter explicitly excludes application-layer profiles. No tooling/hosting WG exists. SEP-986 (tool name format conformance) and SEP-1730 (SDK tiering) are direct structural precedents: Standards Track SEPs specifying implementor-side conformance without wire-protocol changes, filed by individual contributors.
 
 ## Backwards Compatibility
 
@@ -152,8 +152,8 @@ The full conformance security checklist is in `security-model.md`.
 
 ## Open Issues
 
-- **Naming.** The MCLIP name has been sanity-checked against trademarks, software ecosystems, and known ML-community usage (`naming-check.md`). Verdict: safe to proceed; OpenAI's CLIP collision is initials-only with strong audience separation. No blockers.
-- **Wrapper-maintainer reading-pass.** The `prd.md` §6 "at least one wrapper-maintainer publicly engaged" success criterion is unmet at time of filing. Wrapper outreach is in progress; reading-pass evidence will be added to this SEP's review thread as it comes in.
+- **Naming.** The MCLIP name has been sanity-checked against trademarks, software ecosystems, and known ML-community usage. Verdict: safe to proceed; no blockers.
+- **Wrapper-maintainer reading-pass.** Outreach is in progress; reading-pass evidence will be added to this SEP's review thread as it comes in.
 - **Sponsor.** Core Maintainer candidates identified; outreach will be conducted per the SEP filing process.
 
 ## References
@@ -163,8 +163,13 @@ The full conformance security checklist is in `security-model.md`.
 - Conformance fixture catalogue: `conformance-fixtures.md` (v0.2)
 - Fixture-server implementation spec: `fixtures-spec.md`
 - Reference-CLI architecture: `mclio-architecture.md`
-- Wrapper audit (motivation evidence): `wrapper-audit.md`
-- Maintainer-facing comparison: `wrapper-comparison.md`
 - Adoption guide: `adoption-guide.md`
 - Companion Extensions Track SEP: `sep-extensions-mclip-metadata.md`
-- Governance, SEP workflow, working-group, and maintainer references: `prd.md` §13
+- MCP 2025-11-25 specification: https://modelcontextprotocol.io/specification/2025-11-25
+- MCP 2025-11-25 Authorization: https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization
+- MCP project governance: https://modelcontextprotocol.io/community/governance
+- SEP guidelines: https://modelcontextprotocol.io/community/sep-guidelines
+- SEP-2133 Extensions framework: https://modelcontextprotocol.io/seps/2133-extensions
+- SEP-986 (precedent — tool name format conformance): https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/seps/986-specify-format-for-tool-names.md
+- SEP-1730 (precedent — SDK tiering): https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/seps/1730-sdk-tiering.md
+- Transports WG charter: https://github.com/modelcontextprotocol/transports-wg

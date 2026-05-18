@@ -6,9 +6,9 @@ MCLIP is a draft conformance profile over the Model Context Protocol. The repo i
 
 If you are new to the project, read the specification set in this order:
 
-1. [`prd.md`](prd.md) — product requirements, scope, deliverables, governance routing.
-2. [`profile-v0.md`](profile-v0.md) — the normative profile (Core + 8 modules).
-3. [`security-model.md`](security-model.md) — trust boundaries and the destructive-action policy.
+1. [`profile-v0.md`](profile-v0.md) — the normative profile (Core + 8 modules).
+2. [`security-model.md`](security-model.md) — trust boundaries and the destructive-action policy.
+3. [`conformance-fixtures.md`](conformance-fixtures.md) — the rule-to-fixture catalogue.
 
 Then [`adoption-guide.md`](adoption-guide.md) if you are a wrapper maintainer, or [`fixtures-spec.md`](fixtures-spec.md) / [`mclio-architecture.md`](mclio-architecture.md) if you want to engage on the reference implementation.
 
@@ -16,7 +16,7 @@ Then [`adoption-guide.md`](adoption-guide.md) if you are a wrapper maintainer, o
 
 Good fits for issues:
 
-- A factual error in `wrapper-audit.md` / `wrapper-comparison.md` / `real-mcp-servers.md` about your tool or a tool you know well.
+- A factual error in `real-mcp-servers.md` about an MCP server you maintain or know well.
 - An ambiguity in `profile-v0.md` where two conformant implementations could both pass a fixture but produce different observable behaviour.
 - A MUST in `profile-v0.md` that would force a breaking change to your wrapper's existing surface — push back with the specific rule ID.
 - A gap in `conformance-fixtures.md` — a rule with no fixture, or a fixture whose pass criteria don't match the rule.

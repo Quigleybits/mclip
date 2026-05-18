@@ -219,5 +219,5 @@ Conformance fixtures for this SEP will be added to `conformance-fixtures.md` (cu
 
 - MCLIP profile v0 §16 (MCLIP-Metadata module): `profile-v0.md`
 - MCLIP security model: `security-model.md`
-- SEP-2133 (Extensions framework): see `prd.md` §13
-- MCP 2025-11-25 spec: see `prd.md` §13
+- SEP-2133 (Extensions framework): https://modelcontextprotocol.io/seps/2133-extensions
+- MCP 2025-11-25 spec: https://modelcontextprotocol.io/specification/2025-11-25

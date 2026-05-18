@@ -6,11 +6,6 @@ const blob = `${repo}/blob/main`;
 
 const specs = [
   {
-    name: "Product Requirements (PRD)",
-    file: "prd.md",
-    desc: "Concept, scope, deliverables, success criteria, governance routing.",
-  },
-  {
     name: "Profile v0",
     file: "profile-v0.md",
     desc: "Normative specification — Core plus eight independently-claimable modules. Each rule tagged [MCLIP-§-NN] for conformance tracking.",
@@ -99,8 +94,9 @@ const modules = [
     <p>
       Result: <em>N MCP wrappers, N different CLI surfaces over the same MCP
       server.</em> A script written against one wrapper does not run against
-      another. The audit (<a href={`${blob}/wrapper-audit.md`}>wrapper-audit.md</a>)
-      documents five concrete portability breakages.
+      another. Five concrete portability breakages span the eight wrappers:
+      argument-passing style, JSON output flag + shape, invocation pattern,
+      array encoding, and server reference.
     </p>
     <p>
       MCLIP standardises the translation itself, so any conformant tool

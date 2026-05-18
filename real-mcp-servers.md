@@ -1,7 +1,7 @@
 # Real MCP Servers for MCLIP Prototype Validation
 
 **Date:** 2026-05-16
-**Status:** RATIFIED (2026-05-16). The set below is the v0 prototype validation set. See `decisions/2026-05-16-mcp-server-prototype-set.md` for the decision record.
+**Status:** RATIFIED (2026-05-16). The set below is the v0 prototype validation set.
 
 ## Ratified set
 

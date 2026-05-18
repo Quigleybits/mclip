@@ -161,4 +161,3 @@ If you respond to any of those, please CC `aidey@mclip.dev` (in setup) so feedba
 - `conformance-fixtures.md` — the per-rule fixture catalogue.
 - `fixtures-spec.md` — implementation spec for the synthetic MCP fixture servers.
 - `mclio-architecture.md` — the design for `mclio` (the production CLI / executable reference), for comparison with your own implementation.
-- `wrapper-audit.md` + `wrapper-comparison.md` — the fragmentation evidence behind MCLIP's existence.

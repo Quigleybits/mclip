@@ -18,30 +18,23 @@ Read in this order to orient:
 
 | # | File | What it covers |
 |---|------|----------------|
-| 1 | [`prd.md`](prd.md) | Product requirements, scope, deliverables, success criteria, governance routing. |
-| 2 | [`profile-v0.md`](profile-v0.md) | Normative profile specification — Core plus eight independently-claimable modules. Every rule tagged `[MCLIP-§-NN]` for conformance tracking. |
-| 3 | [`security-model.md`](security-model.md) | Trust boundaries, destructive-action policy, CI-safe behaviour, credential handling, auditability. |
-| 4 | [`conformance-fixtures.md`](conformance-fixtures.md) | 30+ executable conformance fixtures with expected exit codes and output shapes. |
-| 5 | [`adoption-guide.md`](adoption-guide.md) | For existing MCP-to-CLI wrapper maintainers — minimum surface for MCLIP-Core conformance and the per-module cost. |
-| 6 | [`sep-standards-mclip-profile.md`](sep-standards-mclip-profile.md) | Standards Track SEP draft (wraps the profile for filing under `modelcontextprotocol/seps`). |
-| 7 | [`sep-extensions-mclip-metadata.md`](sep-extensions-mclip-metadata.md) | Extensions Track SEP draft (optional `mclip.*` CLI-hint metadata keys, per SEP-2133). |
+| 1 | [`profile-v0.md`](profile-v0.md) | Normative profile specification — Core plus eight independently-claimable modules. Every rule tagged `[MCLIP-§-NN]` for conformance tracking. |
+| 2 | [`security-model.md`](security-model.md) | Trust boundaries, destructive-action policy, CI-safe behaviour, credential handling, auditability. |
+| 3 | [`conformance-fixtures.md`](conformance-fixtures.md) | 30+ executable conformance fixtures with expected exit codes and output shapes. |
+| 4 | [`adoption-guide.md`](adoption-guide.md) | For existing MCP-to-CLI wrapper maintainers — minimum surface for MCLIP-Core conformance and the per-module cost. |
+| 5 | [`sep-standards-mclip-profile.md`](sep-standards-mclip-profile.md) | Standards Track SEP draft (wraps the profile for filing under `modelcontextprotocol/seps`). |
+| 6 | [`sep-extensions-mclip-metadata.md`](sep-extensions-mclip-metadata.md) | Extensions Track SEP draft (optional `mclip.*` CLI-hint metadata keys, per SEP-2133). |
 
-Supporting research and analysis:
+Supporting docs:
 
 - [`product-brief.md`](product-brief.md) — one-pager summary.
 - [`use-cases.md`](use-cases.md) — concrete MCLIP use cases.
-- [`wrapper-audit.md`](wrapper-audit.md) — quantitative audit of the eight existing MCP-to-CLI wrappers.
-- [`wrapper-comparison.md`](wrapper-comparison.md) — maintainer-facing one-page comparison.
-- [`governance-recommendation.md`](governance-recommendation.md) — routing the SEP through the MCP governance process.
-- [`naming-check.md`](naming-check.md) — trademark / package-registry / domain collision audit for "MCLIP".
-- [`real-mcp-servers.md`](real-mcp-servers.md) — the ratified prototype-validation real-server set.
+- [`real-mcp-servers.md`](real-mcp-servers.md) — the prototype-validation real-server set.
 
 Implementation specs:
 
 - [`mclio-architecture.md`](mclio-architecture.md) — architecture spec for `mclio`, the production CLI that doubles as the standard's executable reference.
 - [`fixtures-spec.md`](fixtures-spec.md) — implementation spec for the 9 synthetic MCP fixture servers.
-
-Decision records (append-only): [`decisions/`](decisions/).
 
 ## Implementation
 
@@ -57,7 +50,7 @@ Decision records (append-only): [`decisions/`](decisions/).
 
 ## Status
 
-Pre-SEP. The seven core specification documents are written and internally consistent. The 9 fixture servers and the verify harness are built. The remaining build queue is the `mclio` binary, the full conformance harness against it, and a companion consumer app. External coordination — Discord post, draft SEP PR, wrapper-maintainer outreach — is on hold until the build queue is complete and exercised end-to-end.
+Pre-SEP. The core specification set is drafted and self-consistent. The 9 fixture servers and the verify harness are built. The remaining build queue is the `mclio` binary, the full conformance harness against it, and a companion consumer app.
 
 ## Licence
 

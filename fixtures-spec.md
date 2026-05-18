@@ -140,7 +140,7 @@ The conformance harness (separate deliverable in P1) wraps the fixture servers a
    - stderr: substring match for human-readable warnings; never byte-strict (locale, colour codes).
    - Captured HTTP requests: exact match on `Authorization` header, exact match on URL path, JSON-deep-equal on request body.
 
-The harness emits machine-readable results (JUnit XML or JSON) so a wrapper maintainer can publish per-module pass/fail badges per the `prd.md` §4 deliverable.
+The harness emits machine-readable results (JUnit XML or JSON) so a wrapper maintainer can publish per-module pass/fail badges.
 
 ### Per-fixture harness contracts for client-side-only assertions
 
