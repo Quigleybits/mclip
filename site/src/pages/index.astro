@@ -81,6 +81,19 @@ const modules = [
     </p>
   </header>
 
+  <section class="framing">
+    <p class="framing-lead">
+      MCP does not define a CLI itself. MCLIP defines a canonical CLI
+      projection from MCP's protocol objects &mdash; a deterministic rendering
+      layer that turns any MCP server into a uniform shell surface.
+    </p>
+    <p>
+      A tool's <code>inputSchema</code> becomes long flags. A
+      <code>tools/call</code> result becomes a JSON envelope on stdout. An MCP
+      error becomes a specific exit code.
+    </p>
+  </section>
+
   <section>
     <h2>The problem</h2>
     <p>

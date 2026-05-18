@@ -4,6 +4,10 @@
 
 > If a service exposes an MCP server, any MCLIP-conformant client produces the same scriptable surface for it: the same command shape, the same flags, the same JSON envelope, the same exit codes.
 
+MCP does not define a CLI itself. MCLIP defines a canonical CLI projection from MCP's protocol objects — a deterministic rendering layer that turns any MCP server into a uniform shell surface.
+
+A tool's `inputSchema` becomes long flags. A `tools/call` result becomes a JSON envelope on stdout. An MCP error becomes a specific exit code.
+
 Live site: <https://mclip.dev>
 
 ## What this repo is
