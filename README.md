@@ -46,7 +46,7 @@ Decision records (append-only): [`decisions/`](decisions/).
 ## Implementation
 
 - [`fixtures/`](fixtures/) — 9 synthetic MCP servers + verify harness, Go, pinned to `github.com/modelcontextprotocol/go-sdk` v1.6.0.
-- [`mclio`](https://github.com/Quigleybits/mclio) — production CLI (separate repo). Greenfield Go binary; doubles as the standard's executable reference and the recommended daily-driver MCP CLI.
+- **`mclio`** — production CLI (separate repo, in development). Greenfield Go binary; doubles as the standard's executable reference and the recommended daily-driver MCP CLI.
 - [`site/`](site/) — Astro source for <https://mclip.dev>.
 
 ## Canonical identity
