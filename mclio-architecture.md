@@ -1,9 +1,9 @@
 # mclio — Architecture Spec
 
-Version: 0.2 (2026-05-17)
+Version: 0.3 (2026-05-18)
 Status: implementation spec, aligned with `profile-v0.md` draft 2.2.
 
-Implementation language: **Go**, using the official Tier 1 Go MCP SDK. Per user decision: portable installation, fast startup, CI ergonomics, and executable conformance take priority over SDK ecosystem size. TypeScript remains in scope for fixtures and examples, not the `mclio` binary.
+Implementation language: **Go**, using the official Tier 1 Go MCP SDK. Portable installation, fast startup, CI ergonomics, and executable conformance take priority over SDK ecosystem size. TypeScript remains in scope for fixtures and examples, not the `mclio` binary.
 
 This document is the **architecture spec** for the next implementation session. It is a coder's brief, not a tutorial — it names the design decisions a Go implementer needs to make on day one, with rationale.
 

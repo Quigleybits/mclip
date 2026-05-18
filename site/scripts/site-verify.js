@@ -26,8 +26,8 @@ if (h1 !== "MCLIP") {
 }
 
 const specCount = await page.locator("ul.specs > li").count();
-if (specCount !== 6) {
-  throw new Error(`Expected 6 spec links, got ${specCount}`);
+if (specCount !== 9) {
+  throw new Error(`Expected 9 spec links, got ${specCount}`);
 }
 
 const moduleCount = await page.locator("ul.modules > li").count();

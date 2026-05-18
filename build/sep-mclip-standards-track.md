@@ -2,14 +2,14 @@
 
 SEP: TBD — to be assigned by Core Maintainers on PR open
 Title: MCLIP — MCP Command-Line Interface Profile (v0)
-Author: Aidan Quigley (`@<github-handle-tbd>`, aidanjohnquigley@gmail.com)
+Author: Aidan Quigley (`@Quigleybits`, aidanjohnquigley@gmail.com)
 Status: Pre-Draft — pending PR open and sponsor signal; will move to Draft upon sponsorship per [MCP SEP guidelines](https://modelcontextprotocol.io/community/sep-guidelines)
 Type: Standards Track
 Created: 2026-05-16
 Requires: MCP 2025-11-25
 Companion: SEP TBD — MCLIP CLI Metadata Extension (Extensions Track)
 PR: TBD — added on PR open
-Sponsor: TBD — primary candidate `@pja-ant` per `sponsor-candidates.md`; secondary `@pcarleton`; tertiary `@kurtisvg`
+Sponsor: TBD
 
 ## Abstract
 
@@ -129,7 +129,7 @@ This profile pins to MCP 2025-11-25 as its declared baseline (`[MCLIP-15-05]`). 
 
 ## Reference Implementation
 
-The reference CLI is being developed in Go using the official Tier 1 Go MCP SDK (`github.com/modelcontextprotocol/go-sdk` v1.6.0). Architecture: `mclio-architecture.md`. Status at time of SEP filing: architectural spec complete; coding begins after sponsor signal per `problem-statement.md` execution sequence.
+The reference CLI is being developed in Go using the official Tier 1 Go MCP SDK (`github.com/modelcontextprotocol/go-sdk` v1.6.0). Architecture: `mclio-architecture.md`. Status at time of SEP filing: architectural spec complete; coding begins after sponsor signal.
 
 The reference implementation:
 - Implements MCLIP-Core plus all eight optional modules (with MCLIP-Metadata behind a build tag pending the companion Extensions SEP).
@@ -153,8 +153,8 @@ The full conformance security checklist is in `security-model.md`.
 ## Open Issues
 
 - **Naming.** The MCLIP name has been sanity-checked against trademarks, software ecosystems, and known ML-community usage (`naming-check.md`). Verdict: safe to proceed; OpenAI's CLIP collision is initials-only with strong audience separation. No blockers.
-- **Wrapper-maintainer reading-pass.** The `prd.md` §6 "at least one wrapper-maintainer publicly engaged" success criterion is unmet at time of filing. Outreach is in flight per `wrapper-outreach-plan.md`; reading-pass evidence will be added to this SEP's review thread as it comes in.
-- **Sponsor.** Three Core Maintainer candidates identified in `sponsor-candidates.md`: `@pja-ant` (primary), `@pcarleton` (secondary, conformance angle), `@kurtisvg` (tertiary, transport-adjacent). Tagged on the draft PR per the problem-statement execution sequence.
+- **Wrapper-maintainer reading-pass.** The `prd.md` §6 "at least one wrapper-maintainer publicly engaged" success criterion is unmet at time of filing. Wrapper outreach is in progress; reading-pass evidence will be added to this SEP's review thread as it comes in.
+- **Sponsor.** Core Maintainer candidates identified; outreach will be conducted per the SEP filing process.
 
 
 

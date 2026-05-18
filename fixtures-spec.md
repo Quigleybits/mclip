@@ -1,6 +1,6 @@
 # MCLIP Conformance Fixture Servers — Implementation Spec
 
-Version: 0.1 (2026-05-16)
+Version: 0.2 (2026-05-18)
 Status: implementation spec, aligned with `conformance-fixtures.md` v0.2 and `profile-v0.md` draft 2.2.
 
 This document is the **implementation spec** for the synthetic MCP servers that back the conformance fixture catalogue. Each server is a minimal, deterministic MCP server whose tools / resources / prompts exist solely to exercise specific MCLIP rules. The fixtures themselves (FX-* IDs) live in `conformance-fixtures.md`; this document maps each fixture to the server(s) it requires.
@@ -20,7 +20,7 @@ This document is the **implementation spec** for the synthetic MCP servers that 
 
 ## Language and SDK
 
-- **Primary language: Go.** Same language as `mclio` (per user decision). Uses the official Tier 1 Go MCP SDK.
+- **Primary language: Go.** Same language as `mclio`. Uses the official Tier 1 Go MCP SDK.
 - **TypeScript permitted for servers that need Streamable HTTP + a maintained MCP HTTP server library.** The Go SDK's HTTP server surface is the canonical path; TS is the fallback if HTTP server primitives are awkward in Go at spec time. (`mclio-architecture.md` tracks this dependency choice.)
 - All servers compiled / runnable from `fixtures/servers/<server-name>/`. Each server has a `README.md` that names the fixtures it backs.
 

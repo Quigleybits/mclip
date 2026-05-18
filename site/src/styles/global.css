@@ -97,6 +97,12 @@ footer .status {
   margin: 0;
 }
 
+.hero .repo-link {
+  margin: 1rem 0 0;
+  font-size: 0.95rem;
+  color: var(--fg-muted);
+}
+
 section {
   margin: 3rem 0;
 }

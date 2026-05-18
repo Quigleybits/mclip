@@ -14,7 +14,7 @@ npm run preview      # serve the built output
 
 ## Deployment
 
-Hosted on Vercel. Per `~/.claude/rules/tools/vercel.md`:
+Hosted on Vercel. Setup notes:
 
 - The Vercel project is linked at the **repo root**, not the `site/` subdirectory.
 - The Vercel project's **Root Directory** setting is `site/` — Vercel auto-detects Astro and uses `npm run build` → `dist/`.

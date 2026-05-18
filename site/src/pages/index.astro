@@ -1,7 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 
-const repo = "https://github.com/Quigleybits/clip";
+const repo = "https://github.com/Quigleybits/mclip";
 const blob = `${repo}/blob/main`;
 
 const specs = [
@@ -21,6 +21,16 @@ const specs = [
     desc: "Trust boundaries, destructive-action policy, CI-safety, credential handling, optional auditability.",
   },
   {
+    name: "Conformance Fixtures",
+    file: "conformance-fixtures.md",
+    desc: "30+ executable fixtures mapping rules to invocations, expected exit codes, and output shapes.",
+  },
+  {
+    name: "Adoption Guide",
+    file: "adoption-guide.md",
+    desc: "For existing wrapper maintainers — minimum surface for MCLIP-Core conformance and the per-module cost.",
+  },
+  {
     name: "SEP — Standards Track",
     file: "sep-standards-mclip-profile.md",
     desc: "Standards Track SEP draft wrapping the profile for filing under modelcontextprotocol/seps.",
@@ -31,9 +41,14 @@ const specs = [
     desc: "Optional mclip.* metadata keys filed per SEP-2133. Tightening-only safety semantics.",
   },
   {
-    name: "Conformance Fixtures",
-    file: "conformance-fixtures.md",
-    desc: "30+ executable fixtures mapping rules to invocations, expected exit codes, and output shapes.",
+    name: "mclio Architecture",
+    file: "mclio-architecture.md",
+    desc: "Implementation spec for the production CLI that doubles as the standard's executable reference.",
+  },
+  {
+    name: "Fixtures Spec",
+    file: "fixtures-spec.md",
+    desc: "Implementation spec for the nine synthetic MCP servers backing the conformance fixture catalogue.",
   },
 ];
 
@@ -65,6 +80,9 @@ const modules = [
       any MCLIP-conformant client produces the same scriptable surface for it &mdash;
       the same command shape, the same flags, the same JSON envelope, the same
       exit codes.
+    </p>
+    <p class="repo-link">
+      Source: <a href={repo}>{repo.replace("https://", "")}</a>
     </p>
   </header>
 
@@ -150,9 +168,9 @@ const modules = [
   <section>
     <h2>Current status</h2>
     <p>
-      The seven core specification documents are written and internally
-      consistent. The nine synthetic MCP fixture servers and the verify
-      harness are built (Go, MCP SDK v1.6.0; under <code>fixtures/</code>).
+      The specification set is written and internally consistent. The nine
+      synthetic MCP fixture servers and the verify harness are built (Go,
+      MCP SDK v1.6.0; under <a href={`${repo}/tree/main/fixtures`}><code>fixtures/</code></a>).
       <code>mclio</code> &mdash; the production CLI that doubles as the
       standard's executable reference &mdash; has its repo provisioned at
       <a href="https://github.com/Quigleybits/mclio">Quigleybits/mclio</a>;
@@ -160,9 +178,8 @@ const modules = [
       follow once <code>mclio</code> is functional.
     </p>
     <p>
-      External coordination &mdash; Discord problem-statement post, draft SEP
-      PR, wrapper-maintainer outreach &mdash; is on hold until the build block
-      is complete.
+      External coordination &mdash; Discord post, draft SEP PR, wrapper-maintainer
+      outreach &mdash; is on hold until the build block is complete.
     </p>
   </section>
 </Base>

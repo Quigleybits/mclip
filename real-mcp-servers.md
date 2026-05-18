@@ -1,7 +1,7 @@
 # Real MCP Servers for MCLIP Prototype Validation
 
 **Date:** 2026-05-16
-**Status:** RATIFIED (2026-05-16). The set below is the v0 prototype validation set. See `real-mcp-servers-synthesis.md` for the comparison that produced this decision.
+**Status:** RATIFIED (2026-05-16). The set below is the v0 prototype validation set. See `decisions/2026-05-16-mcp-server-prototype-set.md` for the decision record.
 
 ## Ratified set
 
@@ -12,7 +12,7 @@
 | 3 | Context7 MCP Server | Real-SaaS smoke test. Hosted Streamable HTTP + local stdio; API-key header auth (a credential path NOT covered by GitHub's OAuth/PAT). |
 | fallback | `@modelcontextprotocol/server-filesystem` | Cheapest-setup destructive fixture if GitHub PAT setup becomes early-CI friction. Held in reserve, not primary. |
 
-Skipped (Codex recommended but deferred for v0): Harness MCP Server — broad coverage but adds account-provisioning friction that doesn't pay off until closer to freeze. Reintroduce if Context7's tool surface proves too narrow.
+Skipped (deferred for v0): Harness MCP Server — broad coverage but adds account-provisioning friction that doesn't pay off until closer to freeze. Reintroduce if Context7's tool surface proves too narrow.
 
 ---
 

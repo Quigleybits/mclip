@@ -2,7 +2,7 @@
 
 SEP: TBD — to be assigned on PR open
 Title: MCLIP CLI Metadata Extension
-Author: Aidan Quigley (`@<github-handle-tbd>`, aidanjohnquigley@gmail.com)
+Author: Aidan Quigley (`@Quigleybits`, aidanjohnquigley@gmail.com)
 Status: Pre-Draft — gated on the SEP-2133 Extensions Track prerequisites being satisfied (see "Filing prerequisites" below); will move to Draft upon those + sponsor signal
 Type: Extensions Track (per SEP-2133)
 Created: 2026-05-16
