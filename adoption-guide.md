@@ -1,8 +1,10 @@
 # MCLIP Adoption Guide for Existing Wrappers
 
-Version: 0.1 (2026-05-16)
+Version: 0.2 (2026-05-18)
 Status: draft, aligned with `profile-v0.md` draft 2.2.
 Audience: maintainers of `mcp2cli`, `MCPorter`, `MCPShim`, `f/mcptools` (and any other MCP-to-CLI wrapper considering an `--mclip` mode).
+
+> **Outreach status (2026-05-18):** This guide is part of the public MCLIP draft. Formal maintainer outreach has not yet begun — it is held until the reference implementation (`mclio`) is functional and the conformance harness is end-to-end exercisable. If you maintain one of the wrappers named above and want to push back on the framing or the spec itself before formal outreach reaches you, an issue on this repo or a note to `aidey@mclip.dev` (in setup) is the fastest way in.
 
 This is not a "switch to MCLIP" pitch. It's a "here is the minimum surface area you need to add to claim MCLIP-Core conformance, and here is what each optional module adds on top." Your existing UX, daemon, codegen, REPL — all of it — stays intact. MCLIP-mode is a parallel surface.
 
@@ -150,7 +152,7 @@ In priority order:
 3. **A signal in MCP Discord `#general` (or wherever the SEP discussion ends up).** Even "we've read it; haven't decided yet" raises the SEP's sponsor-attractiveness.
 4. **A draft `--mclip` mode against MCLIP-Core only.** This is what we mean by "executable reference implementation by an existing wrapper" — it's the bar that lets the SEP reach Final status.
 
-If you respond to any of those, please CC `aidan@<TBD>` so feedback isn't lost in a Discord scroll.
+If you respond to any of those, please CC `aidey@mclip.dev` (in setup) so feedback isn't lost in a Discord scroll.
 
 ## References
 

@@ -29,9 +29,9 @@ A SEP filed under `modelcontextprotocol/modelcontextprotocol/seps/` is a single 
 
 This produces one document with the SEP preamble, the full normative spec, the rationale and security analysis, and a consolidated reference list — exactly what reviewers expect from a single-file SEP submission.
 
-Working files in this repo remain split for editing efficiency (profile-v0.md evolves separately from the SEP cover material, with its own change log and version stamps). The merge is a one-time mechanical step at SEP-file submission and is owned by the SEP author, not by reviewers. A short script under `scripts/build-sep.sh` (TBD as part of the SEP submission preparation) will perform the concatenation deterministically and re-run if either source changes during review.
+Working files in this repo remain split for editing efficiency (profile-v0.md evolves separately from the SEP cover material, with its own change log and version stamps). The merge is a one-time mechanical step at SEP-file submission and is owned by the SEP author, not by reviewers. The script `scripts/build-sep.sh` (already implemented) performs the concatenation deterministically and writes `build/sep-mclip-standards-track.md`; re-run it whenever either source changes during review.
 
-This addresses the structural concern that a SEP draft pointing at companion files cannot be evaluated as a SEP submission — at submission, the artefact will be one self-contained file. The working split form is internal repo convenience only.
+This addresses the structural concern that a SEP draft pointing at companion files cannot be evaluated as a SEP submission — at submission, the artefact is `build/sep-mclip-standards-track.md`, a single self-contained file (~1130 lines as of draft 2.2). The working split form is internal repo convenience only.
 
 ## Motivation
 
