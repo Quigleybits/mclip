@@ -58,12 +58,54 @@ const modules = [
   { name: "MCLIP-Metadata", note: "Honours optional mclip.* keys" },
   { name: "MCLIP-Discovery", note: "Inherited config files" },
 ];
+
+// Agent-readable structured data. Search/entity-layer signal only — the
+// load-bearing facts also live in the visible static HTML below.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://mclip.dev/#website",
+      url: "https://mclip.dev",
+      name: "MCLIP",
+      description:
+        "A CLI conformance profile over MCP. One canonical CLI surface for every MCP server.",
+    },
+    {
+      "@type": "TechArticle",
+      "@id": "https://mclip.dev/#profile",
+      name: "MCLIP — MCP Command-Line Interface Profile",
+      headline: "MCP Command-Line Interface Profile",
+      description:
+        "A client-side CLI conformance profile over the Model Context Protocol: any MCLIP-conformant client renders the same MCP server into the same command shape, flags, JSON envelope, and exit codes.",
+      url: "https://mclip.dev",
+      isPartOf: { "@id": "https://mclip.dev/#website" },
+      isBasedOn: "https://github.com/Quigleybits/mclip",
+      license: "https://www.apache.org/licenses/LICENSE-2.0",
+      author: { "@id": "https://mclip.dev/#author" },
+    },
+    {
+      "@type": "Person",
+      "@id": "https://mclip.dev/#author",
+      name: "Aidey",
+      email: "aidey@mclip.dev",
+      url: "https://github.com/Quigleybits",
+    },
+  ],
+};
 ---
 
 <Base
   title="MCLIP"
   description="A CLI conformance profile over MCP. One canonical CLI surface for every MCP server."
 >
+  <script
+    type="application/ld+json"
+    slot="head"
+    set:html={JSON.stringify(jsonLd)}
+  />
+
   <header class="hero">
     <h1>MCLIP</h1>
     <p class="tagline">
@@ -197,7 +239,7 @@ mcpc @github tools-call create_issue title:="Bug" body:="..."
         >schemas</strong
       > become input contracts; MCP <strong>responses</strong> become a JSON
       envelope; MCP <strong>lifecycle and interaction mechanics</strong> become
-      CLI runtime behaviour. The nine conformance modules in <a
+      CLI runtime behaviour. MCLIP-Core plus the eight conformance modules in <a
         href={`${blob}/profile-v0.md`}><code>profile-v0.md</code></a
       > &sect;0.7 are organised around this split.
     </p>

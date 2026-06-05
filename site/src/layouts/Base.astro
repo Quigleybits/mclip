@@ -22,6 +22,25 @@ const fullTitle = title === "MCLIP" ? "MCLIP — MCP Command-Line Interface Prof
     {description && <meta property="og:description" content={description} />}
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://mclip.dev" />
+    <link
+      rel="alternate"
+      type="text/markdown"
+      href="/llms.txt"
+      title="LLM-friendly index (llms.txt)"
+    />
+    <link
+      rel="alternate"
+      type="application/json"
+      href="/profile/v0.json"
+      title="MCLIP profile manifest"
+    />
+    <link
+      rel="alternate"
+      type="application/schema+json"
+      href="/schemas/config/v0.json"
+      title="MCLIP config schema"
+    />
+    <slot name="head" />
   </head>
   <body>
     <main>

@@ -1,0 +1,31 @@
+# MCLIP
+
+> MCP Command-Line Interface Profile — a CLI conformance profile over the Model Context Protocol. Any MCLIP-conformant client renders the same MCP server into the same command shape, flags, JSON envelope, and exit codes.
+
+The canonical, authoritative specification lives in the GitHub repository; `profile-v0.md` is normative. mclip.dev is the front door — the repository is the source of truth. Links below point at raw Markdown for token efficiency. A machine-readable manifest of the whole profile (modules, rule markers, schema, resources) is at https://mclip.dev/profile/v0.json. Status: pre-SEP draft — the specification set and nine synthetic MCP fixture servers + Go verify harness are built; the `mclio` reference CLI and the full conformance harness are in development, not yet released.
+
+## Specification
+- [Profile v0 — normative](https://raw.githubusercontent.com/Quigleybits/mclip/main/profile-v0.md): Core plus eight independently-claimable modules; every rule tagged [MCLIP-§-NN].
+- [Profile manifest (JSON)](https://mclip.dev/profile/v0.json): machine-readable module / rule-marker / resource index for the whole profile.
+- [Config schema](https://mclip.dev/schemas/config/v0.json): Draft 2020-12 JSON Schema for the mclip.json client config.
+- [SEP — Standards Track draft](https://raw.githubusercontent.com/Quigleybits/mclip/main/sep-standards-mclip-profile.md): the profile wrapped for filing under modelcontextprotocol/seps.
+- [SEP — Extensions Track draft](https://raw.githubusercontent.com/Quigleybits/mclip/main/sep-extensions-mclip-metadata.md): optional mclip.* CLI-hint metadata keys (per SEP-2133).
+
+## Implementation
+- [mclio architecture](https://raw.githubusercontent.com/Quigleybits/mclip/main/mclio-architecture.md): architecture spec for the reference CLI that doubles as the standard's executable reference (separate repo, not yet built).
+- [Fixtures spec](https://raw.githubusercontent.com/Quigleybits/mclip/main/fixtures-spec.md): the nine synthetic MCP fixture servers backing the conformance catalogue.
+
+## Conformance
+- [Conformance fixtures](https://raw.githubusercontent.com/Quigleybits/mclip/main/conformance-fixtures.md): 30+ executable fixtures with expected exit codes and output shapes.
+- [Real MCP servers](https://raw.githubusercontent.com/Quigleybits/mclip/main/real-mcp-servers.md): the prototype-validation real-server set.
+
+## Adoption
+- [README](https://raw.githubusercontent.com/Quigleybits/mclip/main/README.md): orientation and the MCP-to-CLI mapping.
+- [Adoption guide](https://raw.githubusercontent.com/Quigleybits/mclip/main/adoption-guide.md): minimum surface for MCLIP-Core conformance and per-module cost, aimed at existing wrapper maintainers.
+- [Product brief](https://raw.githubusercontent.com/Quigleybits/mclip/main/product-brief.md): one-page summary of the fragmentation problem MCLIP solves.
+
+## Optional
+- [Security model](https://raw.githubusercontent.com/Quigleybits/mclip/main/security-model.md): trust boundaries, destructive-action policy, CI-safe behaviour, credential handling, auditability.
+- [Use cases](https://raw.githubusercontent.com/Quigleybits/mclip/main/use-cases.md): concrete MCLIP use cases and agentic-infrastructure benefits.
+- [Roadmap](https://raw.githubusercontent.com/Quigleybits/mclip/main/roadmap.md): non-normative candidate additions for future profile revisions.
+- [Contributing](https://raw.githubusercontent.com/Quigleybits/mclip/main/CONTRIBUTING.md): how to contribute and current coordination status.

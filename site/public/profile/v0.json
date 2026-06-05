@@ -1,0 +1,132 @@
+{
+  "$id": "https://mclip.dev/profile/v0.json",
+  "profile": "MCLIP",
+  "name": "MCP Command-Line Interface Profile",
+  "profileVersion": "v0",
+  "status": "pre-SEP draft. The specification set and the nine synthetic MCP fixture servers + Go verify harness are built. The mclio reference CLI and the full conformance harness are in development and not yet released; do not assume a working reference binary exists.",
+  "summary": "A CLI conformance profile over the Model Context Protocol. If a service exposes an MCP server, any MCLIP-conformant client produces the same scriptable surface for it: the same command shape, the same flags, the same JSON envelope, the same exit codes. MCLIP is not a new protocol and requires no vendor-side work; it is a client-side conformance layer over MCP.",
+  "baselineMcpVersion": "2025-11-25",
+  "specDialect": "https://json-schema.org/draft/2020-12/schema",
+  "license": "Apache-2.0",
+  "authoritative": "https://raw.githubusercontent.com/Quigleybits/mclip/main/profile-v0.md",
+  "authorityNote": "profile-v0.md is the normative specification. This manifest, the config schema, and the conformance fixtures are derived conveniences that mirror it; where any of them disagrees with profile-v0.md, the prose specification governs.",
+  "canonical": {
+    "site": "https://mclip.dev",
+    "repository": "https://github.com/Quigleybits/mclip",
+    "specification": "https://raw.githubusercontent.com/Quigleybits/mclip/main/profile-v0.md",
+    "configSchema": "https://mclip.dev/schemas/config/v0.json",
+    "llmsTxt": "https://mclip.dev/llms.txt",
+    "changelog": "https://github.com/Quigleybits/mclip/commits/main/profile-v0.md",
+    "contact": "aidey@mclip.dev"
+  },
+  "conformance": {
+    "model": "A client claims MCLIP-Core (required) plus any subset of the eight optional modules its UX supports, e.g. 'MCLIP v0 — Core + Resources'.",
+    "howToClaim": "Implement every MUST in profile-v0.md for the MCLIP-Core sections, plus the sections of each module you claim. The rule-marker IDs listed per module below index those requirements but are NOT themselves normative — fetch the authoritative specification (see 'authoritative') for the binding text.",
+    "ruleMarkerFormat": "MCLIP-<section>-<NN>. Rule IDs are stable and are never renumbered or reused; a retired ID (e.g. MCLIP-9-06) stays retired.",
+    "moduleCount": 9,
+    "requiredModuleCount": 1,
+    "optionalModuleCount": 8,
+    "ruleMarkerCount": 119
+  },
+  "versioning": {
+    "scheme": "vN segment for the profile's own identity (v0); the baseline MCP version is recorded separately and does not auto-advance with the profile version.",
+    "pin": "Pin to this versioned URL (https://mclip.dev/profile/v0.json). v0 -> v1 only on a breaking profile change; additive rules keep this URL. Detect change out-of-band via the changelog; nothing is pushed to consumers."
+  },
+  "modules": [
+    {
+      "id": "MCLIP-Core",
+      "required": true,
+      "summary": "Required baseline: command shape (tools + meta verbs), argument/flag conventions, stdin, text + JSON output, the JSON envelope, exit codes, pagination, stdio transport and transport errors/timeout, MCLIP server discovery, the core safety baseline, CI-safe composition, and conformance/versioning.",
+      "sections": ["0.5", "0.6", "0.7", "1", "2", "3", "4", "5", "6", "9.3", "10", "12.1 (stdio)", "12.4", "12.5", "13.1", "13.3", "13.4", "14.0", "14.4", "15"],
+      "ruleMarkers": ["MCLIP-0-01", "MCLIP-0-02", "MCLIP-1-01", "MCLIP-1-02", "MCLIP-1-03", "MCLIP-1-04", "MCLIP-1-05", "MCLIP-1-06", "MCLIP-1-07", "MCLIP-1-08", "MCLIP-2-01", "MCLIP-2-02", "MCLIP-2-03", "MCLIP-2-04", "MCLIP-2-05", "MCLIP-2-06", "MCLIP-2-07", "MCLIP-2-08", "MCLIP-2-09", "MCLIP-2-10", "MCLIP-2-11", "MCLIP-2-12", "MCLIP-2-13", "MCLIP-2-14", "MCLIP-2-15", "MCLIP-2-16", "MCLIP-3-01", "MCLIP-3-02", "MCLIP-3-03", "MCLIP-4-01", "MCLIP-4-02", "MCLIP-4-03", "MCLIP-4-04", "MCLIP-4-05", "MCLIP-4-06", "MCLIP-4-07", "MCLIP-5-01", "MCLIP-5-02", "MCLIP-5-03", "MCLIP-5-04", "MCLIP-5-05", "MCLIP-5-06", "MCLIP-5-07", "MCLIP-6-01", "MCLIP-6-02", "MCLIP-6-03", "MCLIP-6-04", "MCLIP-9-07", "MCLIP-10-01", "MCLIP-10-02", "MCLIP-10-03", "MCLIP-10-04", "MCLIP-10-05", "MCLIP-12-01", "MCLIP-12-04", "MCLIP-12-05", "MCLIP-12-06", "MCLIP-13-01", "MCLIP-13-03", "MCLIP-13-04", "MCLIP-13-05", "MCLIP-13-06", "MCLIP-13-07", "MCLIP-14-00", "MCLIP-14-01", "MCLIP-14-02", "MCLIP-14-08", "MCLIP-14-11", "MCLIP-14-12", "MCLIP-14-13", "MCLIP-14-14", "MCLIP-14-15", "MCLIP-15-01", "MCLIP-15-02", "MCLIP-15-03", "MCLIP-15-04", "MCLIP-15-05", "MCLIP-15-06", "MCLIP-15-07", "MCLIP-15-08", "MCLIP-15-09", "MCLIP-15-10", "MCLIP-15-11"]
+    },
+    {
+      "id": "MCLIP-Resources",
+      "required": false,
+      "summary": "First-class resources surface: list, read, templates, watch.",
+      "sections": ["7"],
+      "ruleMarkers": ["MCLIP-7-01", "MCLIP-7-02", "MCLIP-7-03", "MCLIP-7-04", "MCLIP-7-05"]
+    },
+    {
+      "id": "MCLIP-Prompts",
+      "required": false,
+      "summary": "First-class prompts surface: list, get.",
+      "sections": ["8"],
+      "ruleMarkers": ["MCLIP-8-01", "MCLIP-8-02", "MCLIP-8-03"]
+    },
+    {
+      "id": "MCLIP-HTTP",
+      "required": false,
+      "summary": "Streamable HTTP transport: the HTTP item of the transport rules, the MCP-Protocol-Version header, and the HTTP semantics of --transport http.",
+      "sections": ["12.1 (HTTP)", "12.2", "12.3 (HTTP)"],
+      "ruleMarkers": ["MCLIP-12-02", "MCLIP-12-03"]
+    },
+    {
+      "id": "MCLIP-Streaming",
+      "required": false,
+      "summary": "Progress notifications and NDJSON event output for profile-defined streaming commands such as resources watch.",
+      "sections": ["9.1", "9.2"],
+      "ruleMarkers": ["MCLIP-9-01", "MCLIP-9-02", "MCLIP-9-03", "MCLIP-9-04", "MCLIP-9-05"]
+    },
+    {
+      "id": "MCLIP-Safety",
+      "required": false,
+      "summary": "Confirmation-prompt UX, --dry-run, --force semantics, mclip.confirm_message support, and the trusted-server escape hatch. Builds on the Core safety baseline (§14.0).",
+      "sections": ["14.1", "14.2", "14.3"],
+      "ruleMarkers": ["MCLIP-14-03", "MCLIP-14-04", "MCLIP-14-05", "MCLIP-14-06", "MCLIP-14-07", "MCLIP-14-09", "MCLIP-14-10"]
+    },
+    {
+      "id": "MCLIP-Auth",
+      "required": false,
+      "summary": "Credential resolution, per-server env-var conventions, and Bearer-header transmission.",
+      "sections": ["11"],
+      "ruleMarkers": ["MCLIP-11-01", "MCLIP-11-02", "MCLIP-11-03", "MCLIP-11-04", "MCLIP-11-05", "MCLIP-11-06", "MCLIP-11-07", "MCLIP-11-08", "MCLIP-11-09"]
+    },
+    {
+      "id": "MCLIP-Metadata",
+      "required": false,
+      "summary": "Honours the optional mclip.* CLI-hint keys per the companion Extensions Track SEP.",
+      "sections": ["16"],
+      "ruleMarkers": ["MCLIP-16-01", "MCLIP-16-02", "MCLIP-16-03", "MCLIP-16-04"]
+    },
+    {
+      "id": "MCLIP-Discovery",
+      "required": false,
+      "summary": "Inherited MCP config files (Claude Desktop, .vscode/mcp.json, .cursor/mcp.json).",
+      "sections": ["13.2"],
+      "ruleMarkers": ["MCLIP-13-02"]
+    }
+  ],
+  "resources": [
+    {
+      "role": "specification",
+      "title": "Normative profile",
+      "url": "https://raw.githubusercontent.com/Quigleybits/mclip/main/profile-v0.md",
+      "format": "text/markdown"
+    },
+    {
+      "role": "schema",
+      "title": "Client config schema (mclip.json)",
+      "url": "https://mclip.dev/schemas/config/v0.json",
+      "format": "application/schema+json"
+    },
+    {
+      "role": "validation",
+      "title": "Conformance fixtures",
+      "url": "https://raw.githubusercontent.com/Quigleybits/mclip/main/conformance-fixtures.md",
+      "format": "text/markdown"
+    },
+    {
+      "role": "example",
+      "title": "Executable example fixtures — invocations with expected exit codes and output",
+      "url": "https://raw.githubusercontent.com/Quigleybits/mclip/main/conformance-fixtures.md",
+      "format": "text/markdown"
+    },
+    {
+      "role": "guidance",
+      "title": "Adoption guide for wrapper maintainers",
+      "url": "https://raw.githubusercontent.com/Quigleybits/mclip/main/adoption-guide.md",
+      "format": "text/markdown"
+    }
+  ]
+}
