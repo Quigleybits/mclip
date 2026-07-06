@@ -1,8 +1,8 @@
 # MCLIP — MCP Command-Line Interface Profile, v0
 
-**Profile specification, draft v0 — revision 2.2**
+**Profile specification, draft v0 — revision 2.3**
 Author: Aidan Quigley
-Date: 2026-05-16
+Date: 2026-07-06
 Status: **Draft** — pre-SEP, pre-implementation
 Baseline MCP version: `2025-11-25` ([spec](https://modelcontextprotocol.io/specification/2025-11-25))
 
@@ -66,7 +66,7 @@ MCLIP v0 defines one required level and eight optional modules. An implementatio
 | Level | Required? | Covers |
 |---|---|---|
 | **MCLIP-Core** | Yes | §1 (Command shape — `tools` and `meta` verbs only), §2 (Argument and flag conventions), §3 (Stdin handling), §4 (Output formats — `text` and `json`; `ndjson` flag is defined but only required when MCLIP-Streaming is claimed), §5 (JSON envelope), §6 (Exit codes), §10 (Pagination), §12.1 stdio item + §12.4–§12.5 (Transport errors and timeout), §13.1, §13.3, §13.4 (MCLIP-specific server discovery), §14.0 (Minimum safety baseline), §14.4 (Non-interactive / CI-safe composition rollup), §15 (Conformance). |
-| **MCLIP-Resources** | No | §7 (Resources verbs: `list`, `read`, `templates`, `watch`). |
+| **MCLIP-Resources** | No | §7.1–§7.3 (Resources verbs: `list`, `read`, `templates`). `resources watch` (§7.4) additionally requires claiming **MCLIP-Streaming** — its NDJSON event stream is Streaming mechanics (rev 2.3, review F1). |
 | **MCLIP-Prompts** | No | §8 (Prompts verbs: `list`, `get`). |
 | **MCLIP-HTTP** | No | Streamable HTTP transport in §12: HTTP item of §12.1, §12.2 (protocol-version header), and HTTP semantics of §12.3 (`--transport http`). |
 | **MCLIP-Streaming** | No | §9.1 (Progress notifications) and §9.2 (NDJSON event output for profile-defined streaming commands such as `resources watch`). Incremental `tools/call` result streaming is deferred until MCP provides a deterministic signal for it. |
@@ -121,7 +121,7 @@ Where:
 | `resources` | `list` | — | Resources | Enumerate available resources |
 | `resources` | `read` | URI | Resources | Read a resource's contents |
 | `resources` | `templates` | — | Resources | List resource URI templates |
-| `resources` | `watch` | URI | Resources | Subscribe to update notifications (§7.4) |
+| `resources` | `watch` | URI | Resources + Streaming | Subscribe to update notifications (§7.4); requires BOTH modules (rev 2.3) |
 | `prompts` | `list` | — | Prompts | Enumerate available prompts |
 | `prompts` | `get` | prompt name | Prompts | Retrieve a prompt with arguments |
 
@@ -186,7 +186,7 @@ Where:
 
 `[MCLIP-2-07]` Generated flag names MUST NOT collide with reserved flag names (Appendix A). If a tool's input property would collide, the client MUST prefix the generated flag with `--arg-` (e.g. `output` → `--arg-output`).
 
-`[MCLIP-2-13]` If two or more schema properties produce the same generated flag name after lower-kebab-case conversion (for example `fooBar`, `foo_bar`, and `foo-bar` all producing `--foo-bar`), the client MUST NOT choose one property implicitly. All colliding properties MUST be supplied through `--input` or `--input-file`; an invocation using the ambiguous generated flag MUST exit `64` and name the colliding properties.
+`[MCLIP-2-13]` Collision detection MUST run over the FULL generated flag surface: the lower-kebab-case forms of every property, PLUS the `--no-<flag>` negation forms of every boolean property (§2.8), PLUS the `--arg-<flag>` remapped forms produced by reserved-name collisions (`[MCLIP-2-07]`). If two or more schema properties produce the same flag name anywhere in that surface (for example `fooBar`/`foo_bar`/`foo-bar` all producing `--foo-bar`; a property `no_verbose` colliding with boolean `verbose`'s negation `--no-verbose`; a property `arg_output` colliding with the remap of reserved-colliding `output`), the client MUST NOT choose one property implicitly. All colliding properties MUST be supplied through `--input` or `--input-file`; an invocation using the ambiguous generated flag MUST exit `64` and name the colliding properties. (Broadened rev 2.3, review F3.)
 
 ### 2.6 Type mapping
 
@@ -272,7 +272,7 @@ Where:
 
 `[MCLIP-4-04]` `json` output is intended for machine consumption. See §5.
 
-`[MCLIP-4-07]` The flag `--raw` is an opt-in modifier for `--output json`. On successful commands, `--raw -o json` MUST print the MCP result object directly instead of the MCLIP success envelope. Errors MUST still use the standard error envelope (§5.2), including tool-reported errors (`result.isError == true`), so failure handling remains portable. `--raw` with `text` or `ndjson` output MUST exit `64`.
+`[MCLIP-4-07]` The flag `--raw` is an opt-in modifier for `--output json`. On successful commands, `--raw -o json` MUST print the MCP result object directly instead of the MCLIP success envelope. Errors MUST still use the standard error envelope (§5.2), including tool-reported errors (`result.isError == true`), so failure handling remains portable. `--raw` combined with an EXPLICITLY selected `text` or `ndjson` output MUST exit `64`. When `--output` is not given, `--raw` MUST imply `--output json` (so the same command line behaves identically on a TTY and in a pipe). (Clarified rev 2.3, review F5.)
 
 ### 4.4 NDJSON format
 
@@ -366,6 +366,7 @@ Both `result` and `error` keys are present so consumers can read the tool's own 
 | `78` | Config error | mclip.json malformed, server name unknown |
 | `100` | Tool reported error | MCP call succeeded but `result.isError == true` |
 | `130` | Interrupted | SIGINT received and acted upon |
+| `141` | Broken pipe | SIGPIPE with producer state indeterminate (§6.3) |
 
 `[MCLIP-6-02]` Code values `0` and `1` follow universal CLI convention. Codes 64–78 are derived from BSD `sysexits.h` and remain the most precedented category-error codes in published practice despite their formal deprecation. Code `100` is MCLIP-specific. Code `130` follows the common shell convention of `128 + SIGINT`.
 
@@ -397,7 +398,7 @@ Both `result` and `error` keys are present so consumers can read the tool's own 
 
 ### 7.4 Watch
 
-`[MCLIP-7-05]` `<binary> <server> resources watch <uri>` MUST issue `resources/subscribe { uri }` and then stream `notifications/resources/updated` events to stdout in `ndjson` format until interrupted. Each stdout line MUST be a JSON object with `type: "resource.updated"`, `uri`, and `notification` fields, where `notification` contains the server notification payload verbatim. SIGINT MUST trigger `resources/unsubscribe` and exit `130`. A server-initiated normal end of stream exits `0`.
+`[MCLIP-7-05]` (Requires claiming BOTH MCLIP-Resources AND MCLIP-Streaming — rev 2.3, review F1.) `<binary> <server> resources watch <uri>` MUST issue `resources/subscribe { uri }` and then stream `notifications/resources/updated` events to stdout in `ndjson` format until interrupted. Each stdout line MUST be a JSON object with `type: "resource.updated"`, `uri`, and `notification` fields, where `notification` contains the server notification payload verbatim. SIGINT MUST trigger `resources/unsubscribe` and exit `130`. A server-initiated normal end of stream exits `0`.
 
 > Note: requires server-side `capabilities.resources.subscribe: true`. Clients MUST check this capability before attempting to subscribe; otherwise exit `69` with a clear error.
 
@@ -411,7 +412,7 @@ Both `result` and `error` keys are present so consumers can read the tool's own 
 
 ### 8.2 Get
 
-`[MCLIP-8-02]` `<binary> <server> prompts get <name> [--arg-name value...]` MUST issue `prompts/get { name, arguments }` where `arguments` is constructed from `--<arg-name> <value>` flags (kebab-case-mapped from the prompt's declared argument names).
+`[MCLIP-8-02]` `<binary> <server> prompts get <name> [--<argument-name> <value>...]` MUST issue `prompts/get { name, arguments }` where `arguments` is constructed from flags generated from the prompt's declared argument names under the SAME rules as tool properties: lower-kebab-case mapping (§2.5), reserved-name remap to `--arg-` (`[MCLIP-2-07]`, Appendix A), and full-surface collision handling (`[MCLIP-2-13]`). A prompt argument named `output` or `input` therefore surfaces as `--arg-output` / `--arg-input`. (Clarified rev 2.3, review F4.)
 
 `[MCLIP-8-03]` Prompts do not carry per-argument JSON-Schema in the MCP spec — arguments are simple `{ name, description?, required? }` triples. MCLIP clients MUST treat all prompt argument values as strings.
 
@@ -423,7 +424,7 @@ This section is MCLIP-Streaming module. Core clients MAY drop progress notificat
 
 ### 9.1 Progress notifications
 
-`[MCLIP-9-01]` Clients claiming MCLIP-Streaming MUST include a `progressToken` in `_meta` on every outgoing request that could plausibly produce a progress notification (i.e. `tools/call`, `resources/read`, `prompts/get`). The token format is implementation-defined but MUST be unique per outgoing request.
+`[MCLIP-9-01]` Clients claiming MCLIP-Streaming MUST include a `progressToken` in `_meta` on every outgoing request THE CLIENT ISSUES from the set {`tools/call`, `resources/read`, `prompts/get`} (requests belonging to unclaimed modules are simply never issued). The token format is implementation-defined but MUST be unique per outgoing request.
 
 `[MCLIP-9-02]` On receiving `notifications/progress` with a matching `progressToken`, MCLIP-Streaming clients MUST render progress to **stderr**. The rendering is non-normative but SHOULD include the `progress`, `total` (if present), and `message` (if present) fields.
 
@@ -556,7 +557,7 @@ This section is MCLIP-Streaming module. Core clients MAY drop progress notificat
 - `./.vscode/mcp.json`
 - `./.cursor/mcp.json`
 
-Inheriting entries from these files lowers adoption friction for users with existing MCP setups.
+Inheriting entries from these files lowers adoption friction for users with existing MCP setups. When two inherited files define the same server alias, the list order above is the normative precedence (earlier wins). (Rev 2.3, review F6.)
 
 ### 13.3 Config schema
 
@@ -594,7 +595,7 @@ Inheriting entries from these files lowers adoption friction for users with exis
 
 ### 13.4 Server name resolution
 
-`[MCLIP-13-05]` The positional `<server>` argument in command invocations refers to a key in the merged config. Unknown server names, aliases beginning with `-`, and aliases colliding with reserved root command names (§1.4) MUST exit `78` (config error).
+`[MCLIP-13-05]` The positional `<server>` argument in command invocations refers to a key in the merged config. Unknown server names, aliases beginning with `-`, and aliases colliding with the reserved names listed in `[MCLIP-1-08]` MUST exit `78` (config error).
 
 ---
 
@@ -713,7 +714,7 @@ Field contract:
 - `implementation` — non-empty UTF-8 string. No leading/trailing whitespace. SHOULD be lower-kebab-case but parsers MUST NOT depend on case.
 - `implementationVersion` — non-empty UTF-8 string. The profile does NOT constrain it to SemVer because Python, Go, Rust, Node, and Bun implementations use different version conventions; parsers MUST treat this field as opaque.
 - `mclipProfile` — fixed literal `"v0"` for this profile; future profiles will use `"v1"`, `"v2"`, etc.
-- `mclipDraft` — for draft revisions, the literal revision string from the profile header (e.g. `"2.2"`); once the profile freezes, this field MUST be `null` or absent.
+- `mclipDraft` — for draft revisions, the literal revision string from the profile header (e.g. `"2.3"`); once the profile freezes, this field MUST be `null` (always present — a single spelling keeps `--version -o json` diffable per `[MCLIP-14-14]`).
 - `mcpBaseline` — the ISO-8601 date string from this profile's header declaration; MUST NOT be the MCP version the running server is advertising.
 - `modules` — JSON array of lower-kebab-case strings drawn from the canonical enum: `"core"`, `"resources"`, `"prompts"`, `"http"`, `"streaming"`, `"safety"`, `"auth"`, `"metadata"`, `"discovery"`. The array MUST include `"core"` for any client claiming any MCLIP-Core-or-higher conformance. Order MUST be the enum order above. Duplicate entries are a conformance break. Listing a module the implementation does not pass conformance tests for is a conformance break.
 
@@ -775,7 +776,7 @@ This module reserves the `mclip.*` namespace under MCP's `_meta` field for CLI-h
 
 ## Appendix A — Reserved flag reference
 
-These flag names are reserved by MCLIP v0. Tool input schemas whose properties would generate these flag names MUST be remapped per §2.5.
+These flag names are reserved by MCLIP v0. Tool input schema properties AND prompt argument names (§8.2) that would generate these flag names MUST be remapped per §2.5 / `[MCLIP-2-07]`.
 
 | Flag | Short | Section | Description |
 |---|---|---|---|
@@ -865,7 +866,7 @@ mclip: refusing to run destructive tool without --yes (non-interactive).
 # exit: 64
 ```
 
-### C.3 Destructive tool, interactive
+### C.3 Destructive tool, interactive (client claiming MCLIP-Safety — a Core-only client MAY run with no prompt per `[MCLIP-14-02]`)
 
 ```
 $ mclip linear tools call delete_issue --issue-id ENG-123
@@ -958,6 +959,7 @@ $ mclip linear tools list --limit 50
 
 ## Change log
 
+- **v0 draft 2.3 (2026-07-06)**: Pre-implementation adversarial consistency review (`profile-v0-consistency-review-2026-07-06.md`, findings F1–F10) folded in. Normative fixes: `resources watch` now requires BOTH MCLIP-Resources AND MCLIP-Streaming (resolves the ndjson cross-module contradiction — §0.7, §1.3, `[MCLIP-7-05]`); exit `141` added to the §6.1 canonical table (was mandated by `[MCLIP-6-04]` but excluded by `[MCLIP-6-01]`, a direct conflict under `[MCLIP-14-15]` in pipelines); `[MCLIP-2-13]` collision detection broadened to the full generated surface (kebab + boolean `--no-` negations + `--arg-` remaps); `[MCLIP-8-02]` prompt-argument flags bound to the §2 mapping/remap/collision rules (Appendix A intro updated to cover prompt argument names); `[MCLIP-4-07]` `--raw` with unset `--output` now implies json (explicit text/ndjson still exits 64); `[MCLIP-13-02]` list order made the normative intra-inherited-file precedence; `[MCLIP-9-01]` scoped to requests the client actually issues; `[MCLIP-13-05]` cross-reference corrected to `[MCLIP-1-08]`; C.3 captioned as MCLIP-Safety behaviour; `mclipDraft` post-freeze spelling fixed to `null`-only. No rule IDs added or deleted.
 - **v0 draft 2.2 (2026-05-16)**: Resolved the five open security questions from `security-model.md` draft 1.0 and folded the decisions into both documents. Added a Core CI-safe composition rollup (§14.4) and broadened the credential-prompt prohibition. Expanded §15.4 into a full version + MCP-compatibility policy with normative `<binary> --version` output formats. New rules: `[MCLIP-11-02]` (broadened) covers every conformant invocation, not only `tools call` / `resources read` / `prompts get`; `[MCLIP-11-09]` plaintext-token warning when `auth.token` is read from a world/group-readable config file (or Windows ACL equivalent); `[MCLIP-13-06]` (broadened) so the project-local consent rule applies symmetrically to `./mclip.json`, `./.vscode/mcp.json`, `./.cursor/mcp.json`, and future per-project files, AND forbids consent prompts in non-interactive mode; `[MCLIP-13-07]` SHOULD have `safety.trustAnnotationsReason` whenever `trustAnnotations: true`; `[MCLIP-14-08]` audit logging is OPTIONAL for every conformance level; `[MCLIP-14-09]` `--dry-run` MUST redact credential values; `[MCLIP-14-10]` MCLIP-Metadata clients redact `mclip.sensitive: true` fields in `--dry-run` once the Extensions SEP defines that key; `[MCLIP-14-11]`–`[MCLIP-14-15]` consolidate the non-interactive (CI-safe) baseline as a Core requirement (TTY detection, no-prompt rollup, no-secret-leak, output determinism, specific-exit-code); `[MCLIP-15-05]`–`[MCLIP-15-11]` version + MCP-compatibility policy (baseline declaration, draft tracking discipline, `--version` text + JSON formats, module-list contract, Core-absorbs-module migration rule).
 - **v0 draft 2.1 (2026-05-16)**: Tightened pre-freeze blockers: global flag placement and reserved root aliases; schema collision fallback to `--input`; `--raw` JSON success semantics; SIGINT exit code `130`; NDJSON v0 narrowed to profile-defined streaming commands; auth narrowed to keychain / per-server env / config token sources with no generic `MCLIP_TOKEN` or generic `--auth-token`; explicit config precedence changed so user/explicit config beats project-local config; `safety.trustAnnotations` config encoding defined with project-local consent requirements.
 - **v0 draft 2 (2026-05-15)**: Restructured into **MCLIP-Core + 8 optional modules** (Resources, Prompts, HTTP, Streaming, Safety, Auth, Metadata, Discovery) — see §0.7 conformance table and §15.1 claim format. Substantive changes: (1) §14 rewritten — only `annotations.readOnlyHint == true` is a positive safe signal, `destructiveHint == false` no longer skips confirmation by default; (2) §16 reserves the `mclip.*` namespace and defers key definitions to a companion **Extensions Track SEP**; (3) §9.5–§9.6 (task-augmented execution) removed entirely, with all task support deferred to MCLIP v1; (4) §11 Auth reclassified as MCLIP-Auth module; §12 Transport split (stdio Core, Streamable HTTP → MCLIP-HTTP module); §13.2 inherited config files → MCLIP-Discovery module. Rule IDs preserved except for deletions in §9.
